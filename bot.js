@@ -176,6 +176,11 @@ const commands = [
     .addStringOption(o => o.setName('steamid').setDescription('Your Steam ID (from in-game player list)').setRequired(true)),
   new SlashCommandBuilder().setName('unlink').setDescription('Unlink your Steam ID'),
 
+  // MOTD
+  new SlashCommandBuilder().setName('motd').setDescription('Show today\'s message of the day'),
+  new SlashCommandBuilder().setName('refreshmotd').setDescription('Force refresh the MOTD now')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+
   // Utility
   new SlashCommandBuilder().setName('settings').setDescription('Show current server balance settings'),
   new SlashCommandBuilder().setName('kit')
@@ -249,6 +254,13 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBit
 client.once('ready', async () => {
   console.log(`Bot logged in as ${client.user.tag}`);
   initWarps();
+
+  // Daily MOTD system — update now and schedule daily at midnight
+  const { updateMOTD, generateMOTD } = require('./motd');
+  try { await updateMOTD(); } catch (e) { console.log('MOTD init failed:', e.message); }
+  // Schedule daily at midnight
+  const msToMidnight = () => { const n = new Date(), m = new Date(n); m.setHours(24,0,0,0); return m - n; };
+  setTimeout(function daily() { updateMOTD().catch(() => {}); setTimeout(daily, 86400000); }, msToMidnight());
 
   // Register slash commands (preserve any existing Entry Point command)
   const rest = new REST().setToken(process.env.DISCORD_TOKEN);
@@ -606,6 +618,26 @@ client.on('interactionCreate', async interaction => {
         delete players[interaction.user.id];
         save(PLAYERS_FILE, players);
         return interaction.reply({ content: '🔓 Steam ID unlinked.', ephemeral: true });
+      }
+
+      // ═══ MOTD ═══
+      case 'motd': {
+        const { generateMOTD } = require('./motd');
+        const motd = generateMOTD();
+        const embed = new EmbedBuilder()
+          .setTitle('📜 Message of the Day')
+          .setColor(COLORS.yellow)
+          .setDescription(motd.raw)
+          .addFields({ name: 'Theme', value: motd.theme, inline: true }, { name: 'Date', value: motd.date, inline: true })
+          .setFooter({ text: 'Changes daily at midnight | conan.grudge-studio.com' });
+        return interaction.reply({ embeds: [embed] });
+      }
+
+      case 'refreshmotd': {
+        const { updateMOTD } = require('./motd');
+        await interaction.deferReply();
+        const motd = await updateMOTD();
+        return interaction.editReply(`📜 MOTD updated: **${motd.raw}** [${motd.theme}]`);
       }
 
       // ═══ Settings Display ═══

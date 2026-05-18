@@ -332,6 +332,47 @@ app.post('/api/rcon', auth, async (req, res) => {
   }
 });
 
+// Server info (public, no auth needed — for conan.grudge-studio.com landing)
+app.get('/api/serverinfo', (req, res) => {
+  const running = isServerRunning();
+  const proc = running ? getServerProcess() : null;
+  const settings = readSettings();
+  const { generateMOTD } = require('./motd');
+  const motd = generateMOTD();
+  res.json({
+    name: settings.ServerName || 'GRUDGE EXILES',
+    running,
+    publicIp: '76.31.186.50',
+    gamePort: 7777,
+    queryPort: 27015,
+    maxPlayers: parseInt(settings.MaxPlayers) || 40,
+    process: proc,
+    motd: motd.raw,
+    motdTheme: motd.theme,
+    balance: {
+      playerDamage: settings.PlayerDamageMultiplier || '1',
+      petDamage: settings.PetDamageMultiplier || '1',
+      petDamageTaken: settings.PetDamageTakenMultiplier || '1',
+      harvest: settings.HarvestAmountMultiplier || '1',
+      xpRate: settings.PlayerXPRateMultiplier || '1',
+      craftCost: settings.CraftingCostMultiplier || '1',
+      craftTime: settings.CraftingTimeMultiplier || '1',
+      fullLoot: settings.DropEquipmentOnDeath === 'True',
+      knockbackPlayer: settings.PlayerKnockbackMultiplier || '1',
+      knockbackNPC: settings.NPCKnockbackMultiplier || '1',
+      corruption: settings.PlayerCorruptionGainMultiplier || '1',
+      stability: settings.StabilityLossMultiplier || '1',
+    },
+    adminPanel: 'https://conan.grudge-studio.com',
+  });
+});
+
+// MOTD endpoint
+app.get('/api/motd', (req, res) => {
+  const { generateMOTD } = require('./motd');
+  res.json(generateMOTD());
+});
+
 // ── Start ──
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Conan Admin Panel running on http://localhost:${PORT}`);
