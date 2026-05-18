@@ -302,7 +302,7 @@ function sendRcon(command) {
     const port = parseInt(settings.RCONPort) || 25575;
     const pw = settings.RCONPassword || '';
     let authDone = false, result = '';
-    const c = net.connect(port, '127.0.0.1', () => c.write(rconPacket(1, 3, pw)));
+    const c = net.connect(port, '10.0.0.132', () => c.write(rconPacket(1, 3, pw)));
     c.setTimeout(8000);
     c.on('data', d => {
       const body = d.toString('utf8', 12, d.length - 2);

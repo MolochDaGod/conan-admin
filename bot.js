@@ -40,7 +40,7 @@ function rcon(command) {
     const port = parseInt(process.env.RCON_PORT) || 25575;
     const pw = process.env.RCON_PASSWORD || '';
     let authDone = false, result = '';
-    const c = net.connect(port, host, () => c.write(rconPacket(1, 3, pw)));
+    const c = net.connect(port, '10.0.0.132', () => c.write(rconPacket(1, 3, pw)));
     c.setTimeout(8000);
     c.on('data', d => {
       const type = d.readInt32LE(8);
