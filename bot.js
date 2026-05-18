@@ -262,6 +262,35 @@ client.once('ready', async () => {
   const msToMidnight = () => { const n = new Date(), m = new Date(n); m.setHours(24,0,0,0); return m - n; };
   setTimeout(function daily() { updateMOTD().catch(() => {}); setTimeout(daily, 86400000); }, msToMidnight());
 
+  // Server heartbeat — post status to webhook every 5 minutes
+  const https = require('https');
+  async function heartbeat() {
+    const running = isServerRunning();
+    const proc = running ? getProcessInfo() : null;
+    const webhook = process.env.DISCORD_CONAN_WEBHOOK;
+    if (!webhook) return;
+    const url = new (require('url').URL)(webhook);
+    const embed = {
+      title: running ? '🟢 Server Online' : '🔴 Server Offline',
+      color: running ? 0x27ae60 : 0xc0392b,
+      fields: [
+        { name: 'Connect', value: '`76.31.186.50:7777`', inline: true },
+        { name: 'Memory', value: proc ? `${proc.MemMB} MB` : 'N/A', inline: true },
+      ],
+      footer: { text: `Heartbeat | ${new Date().toLocaleTimeString()} | conan.grudge-studio.com` },
+    };
+    if (proc && proc.StartTime) {
+      const mins = Math.round((Date.now() - new Date(proc.StartTime)) / 60000);
+      embed.fields.push({ name: 'Uptime', value: mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h ${mins%60}m`, inline: true });
+    }
+    const payload = JSON.stringify({ username: 'GRUDGE EXILES', embeds: [embed] });
+    const req = https.request(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } });
+    req.on('error', () => {});
+    req.write(payload); req.end();
+  }
+  heartbeat(); // post immediately on boot
+  setInterval(heartbeat, 300000); // then every 5 min
+
   // Register slash commands (preserve any existing Entry Point command)
   const rest = new REST().setToken(process.env.DISCORD_TOKEN);
   const cmdData = commands.map(c => c.toJSON());
