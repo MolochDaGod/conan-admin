@@ -14,7 +14,7 @@ Write-Host "  UDP 7777, 7778, 27015 -> 10.0.0.132" -ForegroundColor Green
 
 # 2. Conan Server
 Write-Host "[2/5] Starting Conan server..." -ForegroundColor Cyan
-Start-Process "D:\ConanServer\ConanSandboxServer.exe" -ArgumentList "-log -Multihome=10.0.0.132 -Port=7777 -QueryPort=27015 -RCONEnabled=1 -RCONPort=25575 -RCONPassword=grudgercon2026" -WorkingDirectory "D:\ConanServer"
+Start-Process "D:\ConanServer\ConanSandboxServer.exe" -ArgumentList "-log -Multihome=10.0.0.132 -MULTIHOMEHTTP=10.0.0.132 -Port=7777 -QueryPort=27015 -RCONEnabled=1 -RCONPort=25575 -RCONPassword=grudgercon2026" -WorkingDirectory "D:\ConanServer"
 Write-Host "  Server launching with RCON enabled" -ForegroundColor Green
 
 # 3. Admin Panel
