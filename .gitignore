@@ -1,0 +1,5 @@
+node_modules/
+.env
+bot-stdout.log
+bot-stderr.log
+data/

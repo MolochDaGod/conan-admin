@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRUDGE EXILES — Server Admin</title>
+<style>
+  :root {
+    --bg: #0d0d0d; --surface: #1a1a1a; --surface2: #242424; --border: #333;
+    --text: #e0e0e0; --text-dim: #888; --accent: #c0392b; --accent-hover: #e74c3c;
+    --green: #27ae60; --yellow: #f39c12; --red: #c0392b;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #1a0a0a 0%, #0d0d0d 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+  }
+  header h1 { font-size: 1.4rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+  header h1 span { color: var(--text); font-weight: 300; }
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+  }
+  .status-badge.online { background: rgba(39,174,96,0.15); color: var(--green); border: 1px solid var(--green); }
+  .status-badge.offline { background: rgba(192,57,43,0.15); color: var(--red); border: 1px solid var(--red); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .status-badge.online .status-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-badge.offline .status-dot { background: var(--red); }
+
+  /* ── Login ── */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center; height: 100vh;
+    flex-direction: column; gap: 1rem;
+  }
+  #login-screen h2 { color: var(--accent); font-size: 1.8rem; letter-spacing: 3px; }
+  #login-screen input {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 12px 20px; border-radius: 6px; font-size: 1rem; width: 300px; text-align: center;
+  }
+  #login-screen button { width: 300px; }
+
+  /* ── Layout ── */
+  .app { display: none; }
+  .app.active { display: block; }
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  /* ── Controls bar ── */
+  .controls {
+    display: flex; gap: 12px; margin-bottom: 2rem; flex-wrap: wrap; align-items: center;
+  }
+  .controls .info {
+    margin-left: auto; font-size: 0.85rem; color: var(--text-dim);
+  }
+  .controls .info code { color: var(--yellow); background: var(--surface2); padding: 2px 8px; border-radius: 4px; }
+
+  /* ── Buttons ── */
+  button, .btn {
+    background: var(--accent); color: #fff; border: none; padding: 10px 20px;
+    border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+    transition: all 0.2s;
+  }
+  button:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  button.secondary { background: var(--surface2); border: 1px solid var(--border); }
+  button.secondary:hover { background: var(--border); }
+  button.green { background: var(--green); }
+  button.green:hover { background: #2ecc71; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 2rem;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 20px; cursor: pointer; font-size: 0.85rem; color: var(--text-dim);
+    border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── Settings panel ── */
+  .settings-panel { display: none; }
+  .settings-panel.active { display: block; }
+  .settings-group { margin-bottom: 2rem; }
+  .settings-group h3 {
+    color: var(--accent); font-size: 1rem; margin-bottom: 1rem;
+    padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .field-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-radius: 6px; margin-bottom: 4px;
+  }
+  .field-row:nth-child(even) { background: var(--surface); }
+  .field-label { font-size: 0.9rem; flex: 1; }
+  .field-input { flex: 0 0 220px; text-align: right; }
+  .field-input input[type="text"], .field-input input[type="number"] {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 12px; border-radius: 4px; width: 200px; text-align: right; font-size: 0.9rem;
+  }
+  .field-input input:focus { border-color: var(--accent); outline: none; }
+  /* Toggle switch */
+  .toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; cursor: pointer; inset: 0; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 26px; transition: 0.3s;
+  }
+  .toggle-slider:before {
+    content: ''; position: absolute; height: 20px; width: 20px; left: 2px; bottom: 2px;
+    background: var(--text-dim); border-radius: 50%; transition: 0.3s;
+  }
+  .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(22px); background: #fff; }
+
+  /* Range slider */
+  .range-wrap { display: flex; align-items: center; gap: 8px; }
+  .range-wrap input[type="range"] {
+    -webkit-appearance: none; width: 140px; height: 4px; background: var(--border);
+    border-radius: 2px; outline: none;
+  }
+  .range-wrap input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); cursor: pointer;
+  }
+  .range-val {
+    font-size: 0.85rem; color: var(--yellow); min-width: 40px; text-align: right;
+    font-family: monospace;
+  }
+
+  /* ── RCON & Logs ── */
+  .console-box {
+    background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px;
+    padding: 1rem; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.8rem;
+    max-height: 400px; overflow-y: auto; white-space: pre-wrap; color: #8f8;
+    line-height: 1.5;
+  }
+  .rcon-input {
+    display: flex; gap: 8px; margin-top: 1rem;
+  }
+  .rcon-input input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 14px; border-radius: 6px; font-family: monospace; font-size: 0.9rem;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 12px 24px;
+    font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.3s;
+    z-index: 999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+
+  /* ── Process info ── */
+  .proc-info {
+    display: flex; gap: 2rem; padding: 1rem; background: var(--surface);
+    border-radius: 8px; margin-bottom: 2rem; flex-wrap: wrap;
+  }
+  .proc-stat { text-align: center; }
+  .proc-stat .val { font-size: 1.4rem; color: var(--yellow); font-weight: 700; }
+  .proc-stat .lbl { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <h2>⚔ GRUDGE EXILES</h2>
+  <p style="color:var(--text-dim)">Server Administration</p>
+  <input type="password" id="token-input" placeholder="Admin Token" onkeydown="if(event.key==='Enter')doLogin()">
+  <button onclick="doLogin()">Enter</button>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+  <header>
+    <h1>⚔ GRUDGE EXILES <span>Admin Panel</span></h1>
+    <div id="status-badge" class="status-badge offline"><div class="status-dot"></div><span>Checking...</span></div>
+  </header>
+
+  <main>
+    <!-- Server controls -->
+    <div class="controls">
+      <button class="green" id="btn-start" onclick="serverAction('start')">▶ Start</button>
+      <button id="btn-stop" onclick="serverAction('stop')">■ Stop</button>
+      <button class="secondary" id="btn-restart" onclick="serverAction('restart')">⟳ Restart</button>
+      <button class="secondary" onclick="saveSettings()">💾 Save Settings</button>
+      <div class="info">
+        Direct Connect: <code id="connect-str">loading...</code>
+      </div>
+    </div>
+
+    <!-- Process info -->
+    <div class="proc-info" id="proc-info" style="display:none">
+      <div class="proc-stat"><div class="val" id="pi-mem">—</div><div class="lbl">Memory (MB)</div></div>
+      <div class="proc-stat"><div class="val" id="pi-cpu">—</div><div class="lbl">CPU Time</div></div>
+      <div class="proc-stat"><div class="val" id="pi-pid">—</div><div class="lbl">PID</div></div>
+      <div class="proc-stat"><div class="val" id="pi-up">—</div><div class="lbl">Uptime</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="tabs"></div>
+
+    <!-- Settings panels -->
+    <div id="panels"></div>
+
+    <!-- RCON tab content -->
+    <div class="settings-panel" id="panel-rcon">
+      <h3 style="color:var(--accent); margin-bottom:1rem">RCON Console</h3>
+      <div class="console-box" id="rcon-output">Type a command below and press Enter...\n</div>
+      <div class="rcon-input">
+        <input type="text" id="rcon-cmd" placeholder="e.g. listplayers" onkeydown="if(event.key==='Enter')sendRcon()">
+        <button onclick="sendRcon()">Send</button>
+      </div>
+    </div>
+
+    <!-- Logs tab content -->
+    <div class="settings-panel" id="panel-logs">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+        <h3 style="color:var(--accent)">Server Logs</h3>
+        <button class="secondary" onclick="loadLogs()">⟳ Refresh</button>
+      </div>
+      <div class="console-box" id="log-output">Loading...</div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+let TOKEN = '';
+let schema = {};
+let currentSettings = {};
+let activeTab = '';
+
+// ── Auth ──
+function doLogin() {
+  TOKEN = document.getElementById('token-input').value;
+  fetch('/api/status', { headers: { 'x-admin-token': TOKEN } })
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(() => {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').classList.add('active');
+      init();
+    })
+    .catch(() => toast('Invalid token', 'error'));
+}
+
+// ── Init ──
+async function init() {
+  await loadSchema();
+  await loadSettings();
+  await refreshStatus();
+  setInterval(refreshStatus, 10000);
+}
+
+// ── API calls ──
+function api(path, opts = {}) {
+  opts.headers = { ...opts.headers, 'x-admin-token': TOKEN, 'Content-Type': 'application/json' };
+  return fetch(path, opts).then(r => r.json());
+}
+
+// ── Status ──
+async function refreshStatus() {
+  try {
+    const data = await api('/api/status');
+    const badge = document.getElementById('status-badge');
+    badge.className = 'status-badge ' + (data.running ? 'online' : 'offline');
+    badge.querySelector('span').textContent = data.running ? 'ONLINE' : 'OFFLINE';
+    document.getElementById('connect-str').textContent = data.publicIp + ':' + data.gamePort;
+    document.getElementById('btn-start').disabled = data.running;
+    document.getElementById('btn-stop').disabled = !data.running;
+
+    const pi = document.getElementById('proc-info');
+    if (data.running && data.process) {
+      pi.style.display = 'flex';
+      const p = data.process;
+      document.getElementById('pi-mem').textContent = p.MemMB || '—';
+      document.getElementById('pi-cpu').textContent = p.CPU ? p.CPU.toFixed(1) + 's' : '—';
+      document.getElementById('pi-pid').textContent = p.Id || '—';
+      if (p.StartTime) {
+        const start = new Date(p.StartTime);
+        const mins = Math.round((Date.now() - start) / 60000);
+        document.getElementById('pi-up').textContent = mins < 60 ? mins + 'm' : Math.round(mins/60) + 'h ' + (mins%60) + 'm';
+      }
+    } else {
+      pi.style.display = 'none';
+    }
+  } catch {}
+}
+
+// ── Server actions ──
+async function serverAction(action) {
+  const btn = document.getElementById('btn-' + action);
+  if (btn) btn.disabled = true;
+  try {
+    const data = await api('/api/server/' + action, { method: 'POST' });
+    toast(data.message, data.ok ? 'success' : 'error');
+    setTimeout(refreshStatus, 3000);
+  } catch (e) {
+    toast('Action failed: ' + e.message, 'error');
+  }
+}
+
+// ── Schema & Settings ──
+async function loadSchema() {
+  schema = await api('/api/schema');
+  buildTabs();
+}
+
+async function loadSettings() {
+  const data = await api('/api/settings');
+  currentSettings = data.settings || {};
+  populateFields();
+}
+
+function buildTabs() {
+  const tabsEl = document.getElementById('tabs');
+  const panelsEl = document.getElementById('panels');
+  tabsEl.innerHTML = '';
+
+  const categories = Object.keys(schema);
+  // Add extra tabs
+  const allTabs = [...categories, 'rcon_console', 'server_logs'];
+
+  allTabs.forEach((key, i) => {
+    const label = key === 'rcon_console' ? '🖥 RCON' : key === 'server_logs' ? '📜 Logs' : schema[key].label;
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (i === 0 ? ' active' : '');
+    tab.textContent = label;
+    tab.onclick = () => switchTab(key);
+    tabsEl.appendChild(tab);
+  });
+
+  // Build settings panels
+  categories.forEach(catKey => {
+    const cat = schema[catKey];
+    const panel = document.createElement('div');
+    panel.className = 'settings-panel';
+    panel.id = 'panel-' + catKey;
+    let html = `<div class="settings-group"><h3>${cat.label}</h3>`;
+    Object.entries(cat.fields).forEach(([fieldKey, field]) => {
+      html += `<div class="field-row"><div class="field-label">${field.label}</div><div class="field-input">`;
+      if (field.type === 'bool') {
+        html += `<label class="toggle"><input type="checkbox" data-key="${fieldKey}" onchange="markDirty()"><span class="toggle-slider"></span></label>`;
+      } else if (field.type === 'float') {
+        html += `<div class="range-wrap"><input type="range" data-key="${fieldKey}" min="${field.min}" max="${field.max}" step="${field.step}" onchange="markDirty();updateRangeVal(this)" oninput="updateRangeVal(this)"><span class="range-val" id="rv-${fieldKey}">${field.default}</span></div>`;
+      } else if (field.type === 'int') {
+        html += `<input type="number" data-key="${fieldKey}" min="${field.min || 0}" max="${field.max || 99999}" onchange="markDirty()">`;
+      } else {
+        html += `<input type="text" data-key="${fieldKey}" onchange="markDirty()">`;
+      }
+      html += '</div></div>';
+    });
+    html += '</div>';
+    panel.innerHTML = html;
+    panelsEl.appendChild(panel);
+  });
+
+  switchTab(categories[0]);
+}
+
+function switchTab(key) {
+  activeTab = key;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const tabs = [...Object.keys(schema), 'rcon_console', 'server_logs'];
+    t.classList.toggle('active', tabs[i] === key);
+  });
+  document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+  if (key === 'rcon_console') {
+    document.getElementById('panel-rcon').classList.add('active');
+  } else if (key === 'server_logs') {
+    document.getElementById('panel-logs').classList.add('active');
+    loadLogs();
+  } else {
+    const panel = document.getElementById('panel-' + key);
+    if (panel) panel.classList.add('active');
+  }
+}
+
+function populateFields() {
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.dataset.key;
+    const val = currentSettings[key];
+    if (val === undefined) return;
+    if (el.type === 'checkbox') {
+      el.checked = val === 'True' || val === 'true' || val === true;
+    } else if (el.type === 'range') {
+      el.value = parseFloat(val);
+      const rv = document.getElementById('rv-' + key);
+      if (rv) rv.textContent = parseFloat(val);
+    } else {
+      el.value = val;
+    }
+  });
+}
+
+function updateRangeVal(el) {
+  const rv = document.getElementById('rv-' + el.dataset.key);
+  if (rv) rv.textContent = parseFloat(el.value).toFixed(2);
+}
+
+function markDirty() { /* visual indicator could go here */ }
+
+async function saveSettings() {
+  const updates = {};
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.dataset.key;
+    if (el.type === 'checkbox') updates[key] = el.checked ? 'True' : 'False';
+    else updates[key] = el.value;
+  });
+  const data = await api('/api/settings', { method: 'PUT', body: JSON.stringify(updates) });
+  toast(data.message, data.ok ? 'success' : 'error');
+}
+
+// ── RCON ──
+async function sendRcon() {
+  const input = document.getElementById('rcon-cmd');
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  const output = document.getElementById('rcon-output');
+  output.textContent += '> ' + cmd + '\n';
+  input.value = '';
+  try {
+    const data = await api('/api/rcon', { method: 'POST', body: JSON.stringify({ command: cmd }) });
+    output.textContent += (data.response || '(no response)') + '\n';
+  } catch (e) {
+    output.textContent += 'Error: ' + e.message + '\n';
+  }
+  output.scrollTop = output.scrollHeight;
+}
+
+// ── Logs ──
+async function loadLogs() {
+  try {
+    const data = await api('/api/logs?lines=200');
+    document.getElementById('log-output').textContent = data.logs || 'No logs available.';
+    const el = document.getElementById('log-output');
+    el.scrollTop = el.scrollHeight;
+  } catch {}
+}
+
+// ── Toast ──
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
