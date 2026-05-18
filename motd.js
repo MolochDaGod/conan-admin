@@ -147,13 +147,46 @@ async function updateMOTD() {
     console.log('[MOTD] Broadcast failed (server may be down):', e.message);
   }
   
+  // Post to Discord webhook
+  try { await postToWebhook(motd); } catch {}
+
   // Log
   logMOTD(motd);
   return motd;
 }
 
+// ── Post to Discord webhook ──
+function postToWebhook(motd) {
+  const webhookUrl = process.env.DISCORD_CONAN_WEBHOOK;
+  if (!webhookUrl) return Promise.resolve();
+  const https = require('https');
+  const url = new (require('url').URL)(webhookUrl);
+  const payload = JSON.stringify({
+    username: 'GRUDGE EXILES',
+    content: null,
+    embeds: [{
+      title: '📜 Message of the Day',
+      description: motd.raw,
+      color: 0xc0392b,
+      fields: [
+        { name: '🎯 Theme', value: motd.theme, inline: true },
+        { name: '📅 Date', value: motd.date, inline: true },
+        { name: '🔗 Connect', value: '`76.31.186.50:7777`', inline: true },
+      ],
+      footer: { text: 'conan.grudge-studio.com | Changes daily at midnight' },
+    }]
+  });
+  return new Promise((resolve) => {
+    const req = https.request(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, (res) => {
+      let body = ''; res.on('data', c => body += c); res.on('end', () => { console.log('[MOTD] Webhook posted:', res.statusCode); resolve(); });
+    });
+    req.on('error', e => { console.log('[MOTD] Webhook failed:', e.message); resolve(); });
+    req.write(payload); req.end();
+  });
+}
+
 // ── Export for use in bot.js ──
-module.exports = { updateMOTD, generateMOTD, THEMES };
+module.exports = { updateMOTD, generateMOTD, postToWebhook, THEMES };
 
 // ── Run standalone ──
 if (require.main === module) {
