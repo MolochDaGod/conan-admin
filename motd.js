@@ -12,13 +12,13 @@ const MOTD_LOG = path.join(__dirname, 'data', 'motd-history.json');
 // ── Message pools by theme ──
 const THEMES = {
   combat: [
-    "Swords tickle. Poison kills. Stack your bleeds or die trying.",
-    "Your weapon is a delivery system for DoTs. Act accordingly.",
-    "The warrior who lands 10 weak hits outlives the one who swings once and misses.",
-    "Daggers + poison = the real endgame. Don't sleep on alchemists.",
+    "Weapons hit full force. Armor absorbs the rest. Outlast your enemy.",
+    "60% damage reduction means every fight is a war of attrition. Bring food.",
+    "Full weapon damage + heavy armor = the meta. Gear matters more than ever.",
+    "Daggers are fast, hammers hit hard — both work now. Pick your style.",
     "Knockback is king today. Bring a hammer and own the cliffside fights.",
-    "Every hit is a chance to bleed. Every bleed is a countdown to death.",
-    "Smart fighters poison their blade BEFORE the fight. Be smart.",
+    "Every hit lands at full power. Stack bleeds on top and watch them crumble.",
+    "Smart fighters bring the right weapon AND the right armor. Balance is everything.",
   ],
   pets: [
     "Your pet does 2x damage and takes half. If you're fighting without one, you're losing.",
@@ -44,12 +44,12 @@ const THEMES = {
     "Sprint 15% faster than vanilla. Outrun what you can't outfight.",
   ],
   lore: [
-    "The Exiled Lands remember those who bleed. Leave your mark in poison and fire.",
-    "In GRUDGE EXILES, the strong don't just survive — they apply pressure over time.",
-    "Racalvin whispers from the void: 'The blade is not the weapon. The venom is.'",
-    "The old gods favor those who understand: death is not instant, it is gradual.",
-    "On this server, patience is deadlier than strength. Let the DoTs do their work.",
-    "Every exile who walks these lands carries poison. The question is: whose?",
+    "The Exiled Lands reward those who endure. Hit hard. Survive harder.",
+    "In GRUDGE EXILES, the strong don't just hit — they outlast.",
+    "Racalvin whispers from the void: 'The blade strikes true. Only the armored survive.'",
+    "The old gods favor those who understand: strength means nothing without endurance.",
+    "On this server, patience is deadlier than raw power. Outlast your enemy.",
+    "Every exile who walks these lands wears heavy steel. The question is: can you break through?",
   ],
   tips: [
     "Tip: Use /status in Discord to check server health anytime.",

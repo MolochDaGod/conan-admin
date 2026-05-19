@@ -351,6 +351,7 @@ app.get('/api/serverinfo', (req, res) => {
     motdTheme: motd.theme,
     balance: {
       playerDamage: settings.PlayerDamageMultiplier || '1',
+      playerDamageTaken: settings.PlayerDamageTakenMultiplier || '1',
       petDamage: settings.PetDamageMultiplier || '1',
       petDamageTaken: settings.PetDamageTakenMultiplier || '1',
       harvest: settings.HarvestAmountMultiplier || '1',

@@ -41,20 +41,21 @@ Internet
 - **Steam Browser**: View → Game Servers → search "GRUDGE EXILES"
 - **Admin Panel**: https://conan.grudge-studio.com
 
-## Custom Balance — "DoTs Kill, Swords Don't"
+## Custom Balance — "Hit Hard, Die Slow"
 
-| Setting | Value | Effect |
-|-------------------------------|-------|--------------------------------------|
-| PlayerDamageMultiplier | 0.25 | Weapons deal 1/4 damage |
-| PetDamageMultiplier | 2.0 | Pets hit 2x harder |
-| PetDamageTakenMultiplier | 0.5 | Pets take half damage |
-| PetHealthMultiplier | 1.5 | Pets have 50% more HP |
-| HarvestAmountMultiplier | 3.0 | 3x resource gathering |
-| PlayerXPRateMultiplier | 3.0 | 3x XP across all sources |
-| DropEquipmentOnDeath | True | Full loot PVP |
-| EverybodyCanLootCorpse | True | Anyone can loot your body |
+|| Setting | Value | Effect |
+||-------------------------------|-------|--------------------------------------|
+|| PlayerDamageMultiplier | 1.0 | Weapons deal full damage |
+|| PlayerDamageTakenMultiplier | 0.4 | Players take 40% of incoming damage (60% reduction) |
+|| PetDamageMultiplier | 2.0 | Pets hit 2x harder |
+|| PetDamageTakenMultiplier | 0.5 | Pets take half damage |
+|| PetHealthMultiplier | 1.5 | Pets have 50% more HP |
+|| HarvestAmountMultiplier | 3.0 | 3x resource gathering |
+|| PlayerXPRateMultiplier | 3.0 | 3x XP across all sources |
+|| DropEquipmentOnDeath | True | Full loot PVP |
+|| EverybodyCanLootCorpse | True | Anyone can loot your body |
 
-Bleed and poison tick for fixed damage regardless of the weapon multiplier, so reducing direct damage to 0.25x makes DoTs proportionally ~4x more impactful.
+Weapons hit at full base damage but players have 60% damage reduction, making fights longer and more strategic. Both direct hits and DoTs are equally affected by the reduction, so all weapon types and combat styles are viable. Gear, armor, and food management matter more than ever.
 
 All settings are editable live via the admin panel (restart required to apply).
 
@@ -67,11 +68,32 @@ All settings are editable live via the admin panel (restart required to apply).
 - **Log Viewer**: Tail the latest 200 lines of server logs
 - **Auth**: Token-based — enter the admin token to access
 
+### Server-Side / Admin-Only Edits
+
+Anything that mutates server state requires either the admin panel token or a Discord user with the `Administrator` permission. All of these are *server-side-only*: there is no in-game UI for them.
+
+| Surface | Capability | Where |
+|--------------------------|------------------------------------------------------|----------------------------|
+| Settings editor (web) | Edit any of the 13 categories in `ServerSettings.ini` | `PUT /api/settings` |
+| Server lifecycle (web) | Start / Stop / Restart the dedicated server process | `POST /api/server/*` |
+| RCON console (web) | Send any RCON command (broadcast, teleport, ban, etc.) | `POST /api/rcon` |
+| Log tail (web) | Read the last N lines of `ConanSandbox.log` | `GET /api/logs?lines=N` |
+| Server lifecycle (bot) | `/start` `/stop` `/restart` with broadcast warnings | `bot.js` admin commands |
+| Player moderation (bot) | `/kick` `/ban` `/unban` | RCON-backed |
+| World admin (bot) | `/broadcast` `/rcon` `/tp` `/tpto` `/kit` | RCON-backed |
+| Warp management (bot) | `/setwarp` `/delwarp` — persists to `data/warps.json` | local JSON |
+| Spawn point (bot) | `/setspawn` — persists to `data/spawns.json` | local JSON |
+| MOTD (bot) | `/refreshmotd` — re-runs the daily MOTD job now | `motd.js` |
+
+Player-facing slash commands (`/home`, `/warp`, `/spawn`) only *call* `con TeleportPlayer` via RCON against the admin console character — the player still has to be the in-game admin or be teleported by an admin. The bot does not (and cannot, without a server-side mod) teleport an arbitrary player by Steam ID through vanilla RCON.
+
 ### API Endpoints
 
 | Method | Path | Auth | Description |
 |--------|----------------------|------|------------------------------|
 | GET | `/api/schema` | No | Settings schema/metadata |
+| GET | `/api/serverinfo` | No | Public landing-page info (status, balance, MOTD) |
+| GET | `/api/motd` | No | Today's MOTD payload |
 | GET | `/api/status` | Yes | Server running state + process info |
 | POST | `/api/server/start` | Yes | Start the Conan server |
 | POST | `/api/server/stop` | Yes | Kill the Conan server |
@@ -117,7 +139,7 @@ C:\Users\david\.cloudflared\
 
 ## Discord Bot
 
-The bot (`bot.js`) runs as **Grudge Bot#0024** with 28 slash commands.
+The bot (`bot.js`) runs as **Grudge Bot#0024** with 30 slash commands. It registers globally by default, or per-guild (instantly) when `DISCORD_GUILD_ID` is set in `.env`.
 
 ### Player Commands
 | Command | Description |
@@ -127,6 +149,7 @@ The bot (`bot.js`) runs as **Grudge Bot#0024** with 28 slash commands.
 | `/serverinfo` | Connection details and balance overview |
 | `/rules` | Server rules |
 | `/settings` | Current balance multipliers |
+| `/motd` | Show today's message of the day |
 | `/sethome <name> <x> <y> <z>` | Save a location (max 5) |
 | `/home <name>` | Teleport to saved home |
 | `/homes` | List your homes |
@@ -153,6 +176,7 @@ The bot (`bot.js`) runs as **Grudge Bot#0024** with 28 slash commands.
 | `/setspawn <x> <y> <z>` | Set custom spawn point |
 | `/setwarp <name> <x> <y> <z>` | Create warp point |
 | `/delwarp <name>` | Delete warp point |
+| `/refreshmotd` | Force-refresh today's MOTD now |
 | `/kit <player> <kit>` | Give starter/builder/warrior/alchemist kit |
 
 ### Default Warps
@@ -162,6 +186,38 @@ The bot (`bot.js`) runs as **Grudge Bot#0024** with 28 slash commands.
 - `volcano` — The Volcano region
 - `jungle` — Eastern jungle
 - `unnamed-city` — The Unnamed City ruins
+
+### Discord Webhook Posts
+
+The bot writes two kinds of automated posts to the channel webhook set in `DISCORD_CONAN_WEBHOOK`. They post as the `GRUDGE EXILES` username and require no slash-command interaction.
+
+| Post | Source | Cadence | Contents |
+|----------------|------------------------|--------------------|-----------------------------------------------------|
+| Heartbeat | `bot.js` `heartbeat()` | every 5 min + boot | 🟢/🔴 status, connect string, memory, uptime |
+| MOTD | `motd.js` `postToWebhook()` | daily at 00:00 + `/refreshmotd` | Themed message of the day, theme, date, connect |
+
+The MOTD job additionally rewrites `ServerMessageOfTheDay=` in `ServerSettings.ini` and broadcasts the line in-game via RCON, so all three surfaces (in-game, Discord, web landing page at `/api/motd`) stay in sync.
+
+### Emoji-click warp (not yet implemented)
+
+There is currently **no** reaction-based or button-based warp flow in the bot — all warp UX goes through the `/warp <name>` slash command. The bot only listens for `interactionCreate` of type `ChatInputCommand`; no `messageReactionAdd`, `Button`, or `StringSelectMenu` handlers are registered, and the `GuildMessageReactions` gateway intent is not enabled. If you want a "click 🌀 on the warp post to teleport" flow, it needs to be designed and added — see the *Open follow-ups* note at the bottom of this file.
+
+### Environment Variables
+
+The bot and admin panel read the following from `.env` (see `.env.example` if present):
+
+| Variable | Used by | Purpose |
+|----------------------------|------------------------|---------------------------------------------------------|
+| `DISCORD_TOKEN` | `bot.js` | Bot login token |
+| `DISCORD_CLIENT_ID` | `bot.js` | Application ID for slash-command registration |
+| `DISCORD_GUILD_ID` | `bot.js` | Optional — instant per-guild registration for dev |
+| `DISCORD_CONAN_WEBHOOK` | `bot.js`, `motd.js` | Webhook URL for heartbeat and MOTD posts |
+| `RCON_HOST` | `bot.js` | RCON host (defaults to `127.0.0.1`; server actually binds `10.0.0.132`) |
+| `RCON_PORT` | `bot.js` | RCON port (default `25575`) |
+| `RCON_PASSWORD` | `bot.js` | RCON password — must match the `-RCONPassword=` flag |
+| `CONAN_ADMIN_TOKEN` | `server.js` | Admin panel bearer token (default `admin123`) |
+| `CONAN_DIR` | `bot.js` | Override the Conan install dir (default `D:\ConanServer`) |
+| `PORT` | `server.js` | Admin panel port (default `3847`) |
 
 ### RCON Note
 Conan Exiles uses a non-standard RCON auth packet (ID `537919488` instead of `1`). The bot and admin panel use a custom raw TCP RCON client to handle this — the `rcon-client` npm package does not work with Conan.
@@ -239,6 +295,12 @@ Start-Process "D:\ConanServer\ConanSandboxServer.exe" -ArgumentList "-log" -Work
 - **DNS/Tunnel**: Cloudflare (grudge-studio.com)
 - **Port Forwarding**: UPnP via Windows COM API
 - **No mods** — all features use vanilla admin commands and server settings
+
+## Open Follow-ups
+
+- **Emoji-click warp from Discord post.** Proposed flow: bot posts (or replaces) a "Warp Map" embed in a designated channel with one reaction per warp (🌀 + per-region emoji). When a linked user reacts, the bot looks up `players.json[uid].steamId`, the warp coords, and runs `con TeleportPlayer …` via RCON. Requires: enable `GuildMessageReactions` intent, add `messageReactionAdd` handler, store the warp-message ID, and decide whether to also expose a button-based row (`ActionRowBuilder` is already imported but unused). Not implemented yet — confirm the UX before code lands.
+- **Per-player teleport via RCON.** Vanilla RCON `TeleportPlayer` only targets the admin console character. True per-player teleport needs either a server-side mod or an in-game admin running the command. The current `/warp`, `/home`, `/spawn` flows are honest about this in their reply text.
+- **Webhook channel routing.** Today a single `DISCORD_CONAN_WEBHOOK` receives both heartbeat and MOTD posts. Splitting into `DISCORD_CONAN_HEARTBEAT_WEBHOOK` and `DISCORD_CONAN_MOTD_WEBHOOK` would let admins keep status spam out of player-facing channels.
 
 ---
 

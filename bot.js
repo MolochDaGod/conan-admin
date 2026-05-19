@@ -181,6 +181,13 @@ const commands = [
   new SlashCommandBuilder().setName('refreshmotd').setDescription('Force refresh the MOTD now')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
+  // Wipe state management
+  new SlashCommandBuilder().setName('wipesave').setDescription('Save current world as the wipe template (preserves map rooms)')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+  new SlashCommandBuilder().setName('wiperestore').setDescription('Wipe server and restore from saved template')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+  new SlashCommandBuilder().setName('wipeinfo').setDescription('Show wipe state info'),
+
   // Utility
   new SlashCommandBuilder().setName('settings').setDescription('Show current server balance settings'),
   new SlashCommandBuilder().setName('kit')
@@ -368,11 +375,11 @@ client.on('interactionCreate', async interaction => {
         const embed = new EmbedBuilder()
           .setTitle('⚔ GRUDGE EXILES — Server Info')
           .setColor(COLORS.red)
-          .setDescription('**DoTs Kill, Swords Don\'t** — Full Loot PVP')
+          .setDescription('**Hit Hard, Die Slow** — Full Loot PVP')
           .addFields(
             { name: '🔗 Direct Connect', value: '`76.31.186.50:7777`' },
             { name: '🌐 Admin Panel', value: '[conan.grudge-studio.com](https://conan.grudge-studio.com)' },
-            { name: '⚔ Balance', value: '• Weapon damage: **0.25x** (DoTs are king)\n• Harvest: **3x**\n• XP: **3x** all sources\n• Pets: **2x damage**, **0.5x taken**' },
+            { name: '⚔ Balance', value: '• Weapon damage: **1.0x** (full)\n• Damage taken: **0.4x** (60% reduction)\n• Harvest: **3x**\n• XP: **3x** all sources\n• Pets: **2x damage**, **0.5x taken**' },
             { name: '💀 Loot', value: 'Full loot on death — everyone can loot corpses' },
             { name: '🐾 Followers', value: 'Max 2 thralls/pets following' },
             { name: '🔧 Crafting', value: '0.5x craft time, 3x craft XP' },
@@ -669,6 +676,148 @@ client.on('interactionCreate', async interaction => {
         return interaction.editReply(`📜 MOTD updated: **${motd.raw}** [${motd.theme}]`);
       }
 
+      // ═══ Wipe State Management ═══
+      case 'wipesave': {
+        await interaction.deferReply();
+        const savedDir = path.join(CONAN_DIR, 'ConanSandbox', 'Saved');
+        const wipeDir = 'D:\\backups\\conan\\wipe-state';
+        try {
+          // Find game databases
+          const files = fs.readdirSync(savedDir).filter(f => f.match(/^game.*\.db$/));
+          if (files.length === 0) return interaction.editReply('❌ No game databases found.');
+
+          // Create wipe state directory
+          fs.mkdirSync(wipeDir, { recursive: true });
+
+          // Copy databases
+          const copied = [];
+          for (const f of files) {
+            const src = path.join(savedDir, f);
+            const dst = path.join(wipeDir, f);
+            fs.copyFileSync(src, dst);
+            const sizeMB = (fs.statSync(src).size / 1048576).toFixed(1);
+            copied.push(`${f} (${sizeMB} MB)`);
+          }
+
+          // Save metadata
+          const meta = { savedAt: new Date().toISOString(), savedBy: interaction.user.username, files: copied };
+          fs.writeFileSync(path.join(wipeDir, 'wipe-state.json'), JSON.stringify(meta, null, 2));
+
+          const embed = new EmbedBuilder()
+            .setTitle('💾 Wipe State Saved')
+            .setColor(COLORS.green)
+            .setDescription('Current world snapshot saved as the wipe template.\nMap rooms and admin buildings will survive future wipes.')
+            .addFields(
+              { name: 'Files', value: copied.join('\n') },
+              { name: 'Restore', value: 'Use `/wiperestore` to wipe and restore this state.' },
+            )
+            .setFooter({ text: `Saved by ${interaction.user.username}` });
+          return interaction.editReply({ embeds: [embed] });
+        } catch (e) {
+          return interaction.editReply(`❌ Failed to save wipe state: ${e.message}`);
+        }
+      }
+
+      case 'wiperestore': {
+        await interaction.deferReply();
+        const savedDir2 = path.join(CONAN_DIR, 'ConanSandbox', 'Saved');
+        const wipeDir2 = 'D:\\backups\\conan\\wipe-state';
+        const preWipeDir = `D:\\backups\\conan\\pre-wipe-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}`;
+
+        try {
+          // Verify wipe state exists
+          const wipeFiles = fs.readdirSync(wipeDir2).filter(f => f.match(/^game.*\.db$/));
+          if (wipeFiles.length === 0) return interaction.editReply('❌ No wipe state found. Use `/wipesave` first.');
+
+          // Read metadata
+          let metaInfo = '';
+          try {
+            const meta = JSON.parse(fs.readFileSync(path.join(wipeDir2, 'wipe-state.json'), 'utf8'));
+            metaInfo = `Restoring state from ${meta.savedAt.split('T')[0]} (saved by ${meta.savedBy})`;
+          } catch {}
+
+          // Broadcast warning
+          try { await rcon('broadcast SERVER WIPE IN 30 SECONDS! Map rooms will be preserved.'); } catch {}
+          await interaction.editReply(`⏳ ${metaInfo}\nServer shutting down in 30 seconds for wipe...`);
+          await new Promise(r => setTimeout(r, 30000));
+
+          // Stop server
+          if (isServerRunning()) {
+            try { execSync('taskkill /IM ConanSandboxServer-Win64-Shipping.exe /F'); } catch {}
+            try { execSync('taskkill /IM ConanSandboxServer.exe /F'); } catch {}
+            await new Promise(r => setTimeout(r, 5000));
+          }
+
+          // Pre-wipe backup (safety net)
+          fs.mkdirSync(preWipeDir, { recursive: true });
+          const currentDbs = fs.readdirSync(savedDir2).filter(f => f.match(/^game.*\.db$/));
+          for (const f of currentDbs) {
+            fs.copyFileSync(path.join(savedDir2, f), path.join(preWipeDir, f));
+          }
+
+          // Delete current databases
+          for (const f of currentDbs) {
+            fs.unlinkSync(path.join(savedDir2, f));
+          }
+
+          // Restore wipe state
+          const restored = [];
+          for (const f of wipeFiles) {
+            fs.copyFileSync(path.join(wipeDir2, f), path.join(savedDir2, f));
+            const sizeMB = (fs.statSync(path.join(wipeDir2, f)).size / 1048576).toFixed(1);
+            restored.push(`${f} (${sizeMB} MB)`);
+          }
+
+          // Start server
+          spawn(SERVER_EXE, ['-log'], { cwd: CONAN_DIR, detached: true, stdio: 'ignore' }).unref();
+
+          const embed = new EmbedBuilder()
+            .setTitle('🔄 Server Wiped — Map Rooms Restored')
+            .setColor(COLORS.green)
+            .setDescription('The server has been wiped and the wipe template has been restored.\nAll map rooms and admin structures are back.')
+            .addFields(
+              { name: 'Restored Files', value: restored.join('\n') },
+              { name: 'Pre-wipe Backup', value: preWipeDir },
+              { name: 'Status', value: '🟢 Server restarting... allow 30-60 seconds.' },
+            );
+          return interaction.editReply({ embeds: [embed] });
+        } catch (e) {
+          // Try to restart server if something went wrong
+          try { spawn(SERVER_EXE, ['-log'], { cwd: CONAN_DIR, detached: true, stdio: 'ignore' }).unref(); } catch {}
+          return interaction.editReply(`❌ Wipe failed: ${e.message}\nAttempting server restart...`);
+        }
+      }
+
+      case 'wipeinfo': {
+        const wipeDir3 = 'D:\\backups\\conan\\wipe-state';
+        try {
+          const wipeFiles = fs.readdirSync(wipeDir3).filter(f => f.match(/^game.*\.db$/));
+          if (wipeFiles.length === 0) {
+            return interaction.reply({ content: '📋 No wipe state saved yet. An admin can use `/wipesave` to create one.', ephemeral: true });
+          }
+          let meta = {};
+          try { meta = JSON.parse(fs.readFileSync(path.join(wipeDir3, 'wipe-state.json'), 'utf8')); } catch {}
+
+          const fileList = wipeFiles.map(f => {
+            const sizeMB = (fs.statSync(path.join(wipeDir3, f)).size / 1048576).toFixed(1);
+            return `${f} (${sizeMB} MB)`;
+          });
+
+          const embed = new EmbedBuilder()
+            .setTitle('📋 Wipe State Info')
+            .setColor(COLORS.blue)
+            .addFields(
+              { name: 'Saved', value: meta.savedAt ? meta.savedAt.split('T')[0] : 'Unknown', inline: true },
+              { name: 'By', value: meta.savedBy || 'Unknown', inline: true },
+              { name: 'Files', value: fileList.join('\n') },
+            )
+            .setFooter({ text: 'This template preserves map rooms across wipes' });
+          return interaction.reply({ embeds: [embed] });
+        } catch {
+          return interaction.reply({ content: '📋 No wipe state saved yet.', ephemeral: true });
+        }
+      }
+
       // ═══ Settings Display ═══
       case 'settings': {
         const ini = require('ini');
@@ -680,9 +829,9 @@ client.on('interactionCreate', async interaction => {
           .addFields(
             { name: '⚔ Combat', value:
               `Player Damage: **${cfg.PlayerDamageMultiplier || 1}x**\n` +
+              `Damage Taken: **${cfg.PlayerDamageTakenMultiplier || 1}x**\n` +
               `NPC Damage: **${cfg.NPCDamageMultiplier || 1}x**\n` +
-              `NPC Health: **${cfg.NPCHealthMultiplier || 1}x**\n` +
-              `Friendly Fire: **${cfg.FriendlyFireDamageMultiplier || 0.25}x**`, inline: true },
+              `NPC Health: **${cfg.NPCHealthMultiplier || 1}x**`, inline: true },
             { name: '🐾 Followers', value:
               `Pet Damage: **${cfg.PetDamageMultiplier || 1}x**\n` +
               `Pet Taken: **${cfg.PetDamageTakenMultiplier || 1}x**\n` +
