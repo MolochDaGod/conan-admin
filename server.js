@@ -374,6 +374,101 @@ app.get('/api/motd', (req, res) => {
   res.json(generateMOTD());
 });
 
+// ── Shop API (purchasable kits/packages) ──
+const SHOP_PATH = path.join(__dirname, 'data', 'shop.json');
+const DEFAULT_SHOP = [
+  { id: 'starter', name: 'Starter Kit', description: 'Stone tools + fiber', emoji: '🏕', category: 'starter', price: 0, enabled: true, items: [
+    { id: 51001, qty: 1, name: 'Stone Hatchet' }, { id: 51002, qty: 1, name: 'Stone Pick' },
+    { id: 11502, qty: 50, name: 'Plant Fiber' }, { id: 11001, qty: 50, name: 'Stone' },
+    { id: 11101, qty: 30, name: 'Wood' }, { id: 13005, qty: 5, name: 'Waterskin' },
+  ]},
+  { id: 'builder', name: 'Builder Pack', description: 'T2 building materials', emoji: '🏗', category: 'building', price: 0, enabled: true, items: [
+    { id: 11108, qty: 500, name: 'Shaped Wood' }, { id: 11009, qty: 500, name: 'Brick' },
+    { id: 11058, qty: 200, name: 'Iron Reinforcement' }, { id: 11502, qty: 200, name: 'Twine' },
+  ]},
+  { id: 'warrior', name: 'Warrior Pack', description: 'Iron weapons + medium armor', emoji: '⚔', category: 'combat', price: 0, enabled: true, items: [
+    { id: 51011, qty: 1, name: 'Iron Broadsword' }, { id: 51301, qty: 1, name: 'Iron Shield' },
+    { id: 52003, qty: 1, name: 'Medium Chest' }, { id: 52004, qty: 1, name: 'Medium Gauntlets' },
+    { id: 52005, qty: 1, name: 'Medium Leggings' }, { id: 52006, qty: 1, name: 'Medium Boots' },
+    { id: 18100, qty: 20, name: 'Aloe Soup' },
+  ]},
+  { id: 'alchemist', name: 'Alchemist Pack', description: 'Potions + ingredients', emoji: '🧪', category: 'alchemy', price: 0, enabled: true, items: [
+    { id: 18060, qty: 20, name: 'Aloe Extract' }, { id: 18301, qty: 10, name: 'Set Antidote' },
+    { id: 18052, qty: 10, name: 'Healing Waterskin' }, { id: 14180, qty: 50, name: 'Yellow Lotus Blossom' },
+    { id: 14181, qty: 20, name: 'Alchemical Base' },
+  ]},
+];
+
+function readShop() {
+  const dir = path.dirname(SHOP_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(SHOP_PATH)) { fs.writeFileSync(SHOP_PATH, JSON.stringify(DEFAULT_SHOP, null, 2)); return DEFAULT_SHOP; }
+  try { return JSON.parse(fs.readFileSync(SHOP_PATH, 'utf8')); } catch { return DEFAULT_SHOP; }
+}
+function writeShop(data) {
+  const dir = path.dirname(SHOP_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(SHOP_PATH, JSON.stringify(data, null, 2));
+}
+
+// Public: list enabled packages
+app.get('/api/shop', (req, res) => {
+  const shop = readShop();
+  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_TOKEN;
+  res.json(isAdmin ? shop : shop.filter(p => p.enabled));
+});
+
+// Admin: create package
+app.post('/api/shop', auth, (req, res) => {
+  const shop = readShop();
+  const pkg = req.body;
+  if (!pkg.id || !pkg.name) return res.status(400).json({ ok: false, message: 'id and name required' });
+  if (shop.find(p => p.id === pkg.id)) return res.status(409).json({ ok: false, message: `Package '${pkg.id}' already exists` });
+  pkg.enabled = pkg.enabled !== false;
+  pkg.items = pkg.items || [];
+  pkg.createdAt = new Date().toISOString();
+  shop.push(pkg);
+  writeShop(shop);
+  res.json({ ok: true, message: `Package '${pkg.id}' created`, package: pkg });
+});
+
+// Admin: update package
+app.put('/api/shop/:id', auth, (req, res) => {
+  const shop = readShop();
+  const idx = shop.findIndex(p => p.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ ok: false, message: 'Package not found' });
+  shop[idx] = { ...shop[idx], ...req.body, id: req.params.id };
+  writeShop(shop);
+  res.json({ ok: true, message: `Package '${req.params.id}' updated`, package: shop[idx] });
+});
+
+// Admin: delete package
+app.delete('/api/shop/:id', auth, (req, res) => {
+  let shop = readShop();
+  const before = shop.length;
+  shop = shop.filter(p => p.id !== req.params.id);
+  if (shop.length === before) return res.status(404).json({ ok: false, message: 'Package not found' });
+  writeShop(shop);
+  res.json({ ok: true, message: `Package '${req.params.id}' deleted` });
+});
+
+// Admin: grant package to player via RCON
+app.post('/api/shop/:id/grant', auth, async (req, res) => {
+  const shop = readShop();
+  const pkg = shop.find(p => p.id === req.params.id);
+  if (!pkg) return res.status(404).json({ ok: false, message: 'Package not found' });
+  const results = [];
+  for (const item of pkg.items) {
+    try {
+      await sendRcon(`con SpawnItem ${item.id} ${item.qty}`);
+      results.push({ name: item.name, qty: item.qty, ok: true });
+    } catch (e) {
+      results.push({ name: item.name, qty: item.qty, ok: false, error: e.message });
+    }
+  }
+  res.json({ ok: true, package: pkg.name, results });
+});
+
 // ── Start ──
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Conan Admin Panel running on http://localhost:${PORT}`);

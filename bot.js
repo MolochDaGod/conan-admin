@@ -80,7 +80,95 @@ function getProcessInfo() {
 }
 
 // ── Embed colors ──
-const COLORS = { red: 0xc0392b, green: 0x27ae60, yellow: 0xf39c12, blue: 0x3498db, purple: 0x9b59b6 };
+const COLORS = { red: 0xc0392b, green: 0x27ae60, yellow: 0xf39c12, blue: 0x3498db, purple: 0x9b59b6, gold: 0xd4af37 };
+
+// ── Webhook edit-or-create helper ──
+// Tracks message IDs so we PATCH existing messages instead of spamming new ones
+const WEBHOOK_MSG_FILE = path.join(DATA_DIR, 'webhook-messages.json');
+const https = require('https');
+
+function getWebhookIds() {
+  const webhookUrl = process.env.DISCORD_CONAN_WEBHOOK;
+  if (!webhookUrl) return null;
+  const m = webhookUrl.match(/\/webhooks\/(\d+)\/([\w-]+)/);
+  if (!m) return null;
+  return { id: m[1], token: m[2] };
+}
+
+function webhookRequest(method, urlPath, payload) {
+  return new Promise((resolve, reject) => {
+    const opts = { hostname: 'discord.com', path: urlPath, method, headers: { 'Content-Type': 'application/json' } };
+    if (payload) opts.headers['Content-Length'] = Buffer.byteLength(payload);
+    const req = https.request(opts, res => {
+      let body = ''; res.on('data', c => body += c);
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, data: JSON.parse(body || '{}') }); }
+        catch { resolve({ status: res.statusCode, data: {} }); }
+      });
+    });
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
+}
+
+async function webhookEditOrCreate(key, payload) {
+  const wh = getWebhookIds();
+  if (!wh) return;
+  const stored = load(WEBHOOK_MSG_FILE);
+  const msgId = stored[key];
+  const json = JSON.stringify({ username: 'GRUDGE EXILES', ...payload });
+
+  // Try to edit existing message
+  if (msgId) {
+    const res = await webhookRequest('PATCH', `/api/webhooks/${wh.id}/${wh.token}/messages/${msgId}`, json);
+    if (res.status === 200) return; // edited successfully
+    // Message was deleted — fall through to create
+  }
+
+  // Create new message
+  const res = await webhookRequest('POST', `/api/webhooks/${wh.id}/${wh.token}?wait=true`, json);
+  if (res.status === 200 && res.data.id) {
+    stored[key] = res.data.id;
+    save(WEBHOOK_MSG_FILE, stored);
+  }
+}
+
+// ── Shop / Kit system (dynamic, loaded from data/shop.json) ──
+const SHOP_FILE = path.join(DATA_DIR, 'shop.json');
+const DEFAULT_SHOP = [
+  { id: 'starter', name: 'Starter Kit', description: 'Stone tools + fiber', emoji: '🏕', category: 'starter', price: 0, enabled: true, items: [
+    { id: 51001, qty: 1, name: 'Stone Hatchet' }, { id: 51002, qty: 1, name: 'Stone Pick' },
+    { id: 11502, qty: 50, name: 'Plant Fiber' }, { id: 11001, qty: 50, name: 'Stone' },
+    { id: 11101, qty: 30, name: 'Wood' }, { id: 13005, qty: 5, name: 'Waterskin' },
+  ]},
+  { id: 'builder', name: 'Builder Pack', description: 'T2 building materials', emoji: '🏗', category: 'building', price: 0, enabled: true, items: [
+    { id: 11108, qty: 500, name: 'Shaped Wood' }, { id: 11009, qty: 500, name: 'Brick' },
+    { id: 11058, qty: 200, name: 'Iron Reinforcement' }, { id: 11502, qty: 200, name: 'Twine' },
+  ]},
+  { id: 'warrior', name: 'Warrior Pack', description: 'Iron weapons + medium armor', emoji: '⚔', category: 'combat', price: 0, enabled: true, items: [
+    { id: 51011, qty: 1, name: 'Iron Broadsword' }, { id: 51301, qty: 1, name: 'Iron Shield' },
+    { id: 52003, qty: 1, name: 'Medium Chest' }, { id: 52004, qty: 1, name: 'Medium Gauntlets' },
+    { id: 52005, qty: 1, name: 'Medium Leggings' }, { id: 52006, qty: 1, name: 'Medium Boots' },
+    { id: 18100, qty: 20, name: 'Aloe Soup' },
+  ]},
+  { id: 'alchemist', name: 'Alchemist Pack', description: 'Potions + ingredients', emoji: '🧪', category: 'alchemy', price: 0, enabled: true, items: [
+    { id: 18060, qty: 20, name: 'Aloe Extract' }, { id: 18301, qty: 10, name: 'Set Antidote' },
+    { id: 18052, qty: 10, name: 'Healing Waterskin' }, { id: 14180, qty: 50, name: 'Yellow Lotus Blossom' },
+    { id: 14181, qty: 20, name: 'Alchemical Base' },
+  ]},
+];
+
+function loadShop() {
+  if (!fs.existsSync(SHOP_FILE)) { save(SHOP_FILE, DEFAULT_SHOP); return DEFAULT_SHOP; }
+  return load(SHOP_FILE, DEFAULT_SHOP);
+}
+
+function getKit(kitId) {
+  const shop = loadShop();
+  const pkg = shop.find(p => p.id === kitId && p.enabled);
+  return pkg ? pkg.items : null;
+}
 
 // ── Slash Commands Definition ──
 const commands = [
@@ -190,52 +278,15 @@ const commands = [
 
   // Utility
   new SlashCommandBuilder().setName('settings').setDescription('Show current server balance settings'),
+  new SlashCommandBuilder().setName('shop').setDescription('View available kits and packages'),
   new SlashCommandBuilder().setName('kit')
-    .setDescription('Give a starter kit to a player (admin)')
+    .setDescription('Grant a kit/package to a player (admin)')
     .addStringOption(o => o.setName('player').setDescription('Player Steam ID').setRequired(true))
-    .addStringOption(o => o.setName('kit').setDescription('Kit name').setRequired(true)
-      .addChoices(
-        { name: 'Starter (stone tools + fiber)', value: 'starter' },
-        { name: 'Builder (T2 mats)', value: 'builder' },
-        { name: 'Warrior (iron weapons + medium armor)', value: 'warrior' },
-        { name: 'Alchemist (potions + ingredients)', value: 'alchemist' },
-      ))
+    .addStringOption(o => o.setName('kit').setDescription('Kit ID (use /shop to see available)').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 ];
 
-// ── Kit definitions (item IDs) ──
-const KITS = {
-  starter: [
-    { id: 51001, qty: 1, name: 'Stone Hatchet' },
-    { id: 51002, qty: 1, name: 'Stone Pick' },
-    { id: 11502, qty: 50, name: 'Plant Fiber' },
-    { id: 11001, qty: 50, name: 'Stone' },
-    { id: 11101, qty: 30, name: 'Wood' },
-    { id: 13005, qty: 5, name: 'Waterskin' },
-  ],
-  builder: [
-    { id: 11108, qty: 500, name: 'Shaped Wood' },
-    { id: 11009, qty: 500, name: 'Brick' },
-    { id: 11058, qty: 200, name: 'Iron Reinforcement' },
-    { id: 11502, qty: 200, name: 'Twine' },
-  ],
-  warrior: [
-    { id: 51011, qty: 1, name: 'Iron Broadsword' },
-    { id: 51301, qty: 1, name: 'Iron Shield' },
-    { id: 52003, qty: 1, name: 'Medium Chest' },
-    { id: 52004, qty: 1, name: 'Medium Gauntlets' },
-    { id: 52005, qty: 1, name: 'Medium Leggings' },
-    { id: 52006, qty: 1, name: 'Medium Boots' },
-    { id: 18100, qty: 20, name: 'Aloe Soup' },
-  ],
-  alchemist: [
-    { id: 18060, qty: 20, name: 'Aloe Extract' },
-    { id: 18301, qty: 10, name: 'Set Antidote' },
-    { id: 18052, qty: 10, name: 'Healing Waterskin' },
-    { id: 14180, qty: 50, name: 'Yellow Lotus Blossom' },
-    { id: 14181, qty: 20, name: 'Alchemical Base' },
-  ],
-};
+// Kits are now loaded dynamically from data/shop.json — see loadShop() above
 
 // ── Default warps ──
 function initWarps() {
@@ -269,34 +320,56 @@ client.once('ready', async () => {
   const msToMidnight = () => { const n = new Date(), m = new Date(n); m.setHours(24,0,0,0); return m - n; };
   setTimeout(function daily() { updateMOTD().catch(() => {}); setTimeout(daily, 86400000); }, msToMidnight());
 
-  // Server heartbeat — post status to webhook every 5 minutes
-  const https = require('https');
+  // Server heartbeat — stylized embed, always at bottom of channel
+  const HEARTBEAT_CHANNEL = '1394826401311625306';
   async function heartbeat() {
     const running = isServerRunning();
     const proc = running ? getProcessInfo() : null;
-    const webhook = process.env.DISCORD_CONAN_WEBHOOK;
-    if (!webhook) return;
-    const url = new (require('url').URL)(webhook);
-    const embed = {
-      title: running ? '🟢 Server Online' : '🔴 Server Offline',
-      color: running ? 0x27ae60 : 0xc0392b,
-      fields: [
+    let playerCount = '?';
+    if (running) { try { const pl = await rcon('listplayers'); playerCount = pl.trim() ? pl.trim().split('\n').length : 0; } catch { playerCount = '?'; } }
+    const uptime = (proc && proc.StartTime) ? (() => { const m = Math.round((Date.now() - new Date(proc.StartTime)) / 60000); return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`; })() : 'N/A';
+
+    const embed = new EmbedBuilder()
+      .setTitle('⚔ GRUDGE EXILES')
+      .setDescription('**Hit Hard, Die Slow** — Full Loot PVP')
+      .setColor(running ? 0xd4af37 : 0xc0392b)
+      .addFields(
+        { name: 'Status', value: running ? '🟢 **ONLINE**' : '🔴 **OFFLINE**', inline: true },
+        { name: 'Players', value: `**${playerCount}**/40`, inline: true },
         { name: 'Connect', value: '`76.31.186.50:7777`', inline: true },
         { name: 'Memory', value: proc ? `${proc.MemMB} MB` : 'N/A', inline: true },
-      ],
-      footer: { text: `Heartbeat | ${new Date().toLocaleTimeString()} | conan.grudge-studio.com` },
-    };
-    if (proc && proc.StartTime) {
-      const mins = Math.round((Date.now() - new Date(proc.StartTime)) / 60000);
-      embed.fields.push({ name: 'Uptime', value: mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h ${mins%60}m`, inline: true });
+        { name: 'Uptime', value: uptime, inline: true },
+        { name: '\u200b', value: '\u200b', inline: true },
+        { name: '⚔ Balance', value: '`1.4x` DMG • `0.4x` Taken • `2x` HP\n`3x` Harvest • `3x` XP • 💀 Full Loot', inline: false },
+      )
+      .setFooter({ text: `conan.grudge-studio.com • Updated ${new Date().toLocaleTimeString()}` });
+
+    try {
+      const channel = await client.channels.fetch(HEARTBEAT_CHANNEL);
+      if (!channel) return;
+
+      // Delete old heartbeat message so the new one is always at the bottom
+      const stored = load(WEBHOOK_MSG_FILE);
+      if (stored.heartbeatMsgId) {
+        try { const old = await channel.messages.fetch(stored.heartbeatMsgId); await old.delete(); } catch {}
+      }
+
+      // Post fresh message (always newest = always at bottom)
+      const msg = await channel.send({ embeds: [embed] });
+      stored.heartbeatMsgId = msg.id;
+      save(WEBHOOK_MSG_FILE, stored);
+    } catch (e) {
+      console.log('[Heartbeat] Error:', e.message);
+      // Fallback to webhook edit if channel send fails
+      try { await webhookEditOrCreate('heartbeat', { embeds: [embed.toJSON()] }); } catch {}
     }
-    const payload = JSON.stringify({ username: 'GRUDGE EXILES', embeds: [embed] });
-    const req = https.request(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } });
-    req.on('error', () => {});
-    req.write(payload); req.end();
   }
-  heartbeat(); // post immediately on boot
-  setInterval(heartbeat, 300000); // then every 5 min
+  heartbeat();
+  setInterval(heartbeat, 300000);
+
+  // Start in-game chat log watcher (bridges !sethome, !home, !warp from in-game to bot)
+  const { startWatcher } = require('./logwatcher');
+  startWatcher(rcon, client);
 
   // Register slash commands (preserve any existing Entry Point command)
   const rest = new REST().setToken(process.env.DISCORD_TOKEN);
@@ -851,12 +924,29 @@ client.on('interactionCreate', async interaction => {
         return interaction.reply({ embeds: [embed] });
       }
 
-      // ═══ Kits ═══
+      // ═══ Shop ═══
+      case 'shop': {
+        const shop = loadShop().filter(p => p.enabled);
+        if (shop.length === 0) return interaction.reply({ content: 'No packages available.', ephemeral: true });
+        const lines = shop.map(p => `${p.emoji || '📦'} **${p.name}** — ${p.description}\n\u2003\u2003ID: \`${p.id}\` • ${p.items.length} items${p.price ? ` • ${p.price} coins` : ' • Free'}`);
+        const embed = new EmbedBuilder()
+          .setTitle('🛒 GRUDGE EXILES — Shop')
+          .setColor(COLORS.gold)
+          .setDescription(lines.join('\n\n'))
+          .setFooter({ text: 'Admins: /kit <player> <id> to grant • Manage at conan.grudge-studio.com' });
+        return interaction.reply({ embeds: [embed] });
+      }
+
+      // ═══ Kits (dynamic from shop.json) ═══
       case 'kit': {
         const player = interaction.options.getString('player');
         const kitName = interaction.options.getString('kit');
-        const items = KITS[kitName];
-        if (!items) return interaction.reply({ content: '❌ Unknown kit.', ephemeral: true });
+        const items = getKit(kitName);
+        if (!items) {
+          const shop = loadShop().filter(p => p.enabled);
+          const available = shop.map(p => `\`${p.id}\``).join(', ');
+          return interaction.reply({ content: `❌ Unknown kit **${kitName}**. Available: ${available || 'none'}`, ephemeral: true });
+        }
         await interaction.deferReply();
         const results = [];
         for (const item of items) {
@@ -867,8 +957,9 @@ client.on('interactionCreate', async interaction => {
             results.push(`❌ ${item.name} — failed`);
           }
         }
+        const pkg = loadShop().find(p => p.id === kitName);
         const embed = new EmbedBuilder()
-          .setTitle(`🎁 Kit: ${kitName}`)
+          .setTitle(`${pkg?.emoji || '🎁'} Kit: ${pkg?.name || kitName}`)
           .setColor(COLORS.green)
           .setDescription(`Given to **${player}**:\n${results.join('\n')}`);
         return interaction.editReply({ embeds: [embed] });

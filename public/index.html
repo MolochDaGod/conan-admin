@@ -344,6 +344,37 @@
       </div>
     </div>
 
+    <!-- Shop tab content -->
+    <div class="settings-panel" id="panel-shop">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <h3 style="color:var(--accent)">🛒 Shop Packages</h3>
+        <button class="green" onclick="showNewPackageForm()">+ New Package</button>
+      </div>
+      <div id="shop-new-form" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem">
+        <h4 style="color:var(--yellow);margin-bottom:0.5rem">New Package</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <input type="text" id="shop-new-id" placeholder="ID (e.g. raider-pack)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+          <input type="text" id="shop-new-name" placeholder="Display Name" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+          <input type="text" id="shop-new-emoji" placeholder="Emoji (⚔)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <input type="text" id="shop-new-desc" placeholder="Description" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+          <select id="shop-new-cat" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+            <option value="starter">Starter</option><option value="combat">Combat</option><option value="building">Building</option>
+            <option value="alchemy">Alchemy</option><option value="survival">Survival</option><option value="premium">Premium</option>
+          </select>
+          <input type="number" id="shop-new-price" placeholder="Price (0=free)" value="0" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+        </div>
+        <div id="shop-new-items" style="margin-bottom:8px"></div>
+        <button class="secondary" onclick="addItemRow('shop-new-items')" style="margin-bottom:8px">+ Add Item</button>
+        <div style="display:flex;gap:8px">
+          <button class="green" onclick="createPackage()">Create</button>
+          <button class="secondary" onclick="document.getElementById('shop-new-form').style.display='none'">Cancel</button>
+        </div>
+      </div>
+      <div id="shop-list">Loading...</div>
+    </div>
+
     <!-- Logs tab content -->
     <div class="settings-panel" id="panel-logs">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
@@ -463,10 +494,10 @@ function buildTabs() {
 
   const categories = Object.keys(schema);
   // Add extra tabs
-  const allTabs = [...categories, 'rcon_console', 'server_logs'];
+  const allTabs = [...categories, 'shop_manager', 'rcon_console', 'server_logs'];
 
   allTabs.forEach((key, i) => {
-    const label = key === 'rcon_console' ? '🖥 RCON' : key === 'server_logs' ? '📜 Logs' : schema[key].label;
+  const label = key === 'shop_manager' ? '🛒 Shop' : key === 'rcon_console' ? '🖥 RCON' : key === 'server_logs' ? '📜 Logs' : schema[key].label;
     const tab = document.createElement('div');
     tab.className = 'tab' + (i === 0 ? ' active' : '');
     tab.textContent = label;
@@ -505,11 +536,14 @@ function buildTabs() {
 function switchTab(key) {
   activeTab = key;
   document.querySelectorAll('.tab').forEach((t, i) => {
-    const tabs = [...Object.keys(schema), 'rcon_console', 'server_logs'];
+    const tabs = [...Object.keys(schema), 'shop_manager', 'rcon_console', 'server_logs'];
     t.classList.toggle('active', tabs[i] === key);
   });
   document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
-  if (key === 'rcon_console') {
+  if (key === 'shop_manager') {
+    document.getElementById('panel-shop').classList.add('active');
+    loadShopAdmin();
+  } else if (key === 'rcon_console') {
     document.getElementById('panel-rcon').classList.add('active');
   } else if (key === 'server_logs') {
     document.getElementById('panel-logs').classList.add('active');
@@ -580,6 +614,92 @@ async function loadLogs() {
     const el = document.getElementById('log-output');
     el.scrollTop = el.scrollHeight;
   } catch {}
+}
+
+// ── Shop Admin ──
+async function loadShopAdmin() {
+  try {
+    const shop = await api('/api/shop');
+    const el = document.getElementById('shop-list');
+    if (!shop.length) { el.innerHTML = '<p style="color:var(--text-dim)">No packages yet. Click "+ New Package" to create one.</p>'; return; }
+    el.innerHTML = shop.map(p => `
+      <div class="field-row" style="padding:12px 16px;margin-bottom:6px;background:var(--surface);border-radius:6px;border:1px solid var(--border)">
+        <div style="flex:1">
+          <strong>${p.emoji || '📦'} ${p.name}</strong> <code style="color:var(--text-dim);font-size:0.8rem">${p.id}</code>
+          ${!p.enabled ? '<span style="color:var(--red);font-size:0.75rem"> (disabled)</span>' : ''}
+          <br><span style="color:var(--text-dim);font-size:0.85rem">${p.description || ''} • ${p.items.length} items${p.price ? ' • ' + p.price + ' coins' : ''}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="secondary" onclick="togglePackage('${p.id}',${!p.enabled})" style="padding:6px 12px;font-size:0.8rem">${p.enabled ? '🚫 Disable' : '✅ Enable'}</button>
+          <button class="secondary" onclick="grantPackage('${p.id}')" style="padding:6px 12px;font-size:0.8rem">🎁 Grant</button>
+          <button class="secondary" onclick="deletePackage('${p.id}')" style="padding:6px 12px;font-size:0.8rem;color:var(--red)">🗑</button>
+        </div>
+      </div>
+    `).join('');
+  } catch { document.getElementById('shop-list').innerHTML = 'Failed to load shop.'; }
+}
+
+function showNewPackageForm() {
+  document.getElementById('shop-new-form').style.display = 'block';
+  document.getElementById('shop-new-items').innerHTML = '';
+  addItemRow('shop-new-items');
+}
+
+function addItemRow(containerId) {
+  const div = document.getElementById(containerId);
+  const row = document.createElement('div');
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 2fr 80px 30px;gap:6px;margin-bottom:4px';
+  row.innerHTML = `
+    <input type="number" placeholder="Item ID" class="shop-item-id" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px">
+    <input type="text" placeholder="Name" class="shop-item-name" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px">
+    <input type="number" placeholder="Qty" value="1" class="shop-item-qty" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px">
+    <button onclick="this.parentElement.remove()" style="padding:4px;font-size:0.8rem" class="secondary">✕</button>
+  `;
+  div.appendChild(row);
+}
+
+async function createPackage() {
+  const items = [];
+  document.querySelectorAll('#shop-new-items > div').forEach(row => {
+    const id = parseInt(row.querySelector('.shop-item-id').value);
+    const name = row.querySelector('.shop-item-name').value;
+    const qty = parseInt(row.querySelector('.shop-item-qty').value) || 1;
+    if (id && name) items.push({ id, name, qty });
+  });
+  const pkg = {
+    id: document.getElementById('shop-new-id').value.trim().toLowerCase().replace(/\s+/g, '-'),
+    name: document.getElementById('shop-new-name').value.trim(),
+    emoji: document.getElementById('shop-new-emoji').value.trim() || '📦',
+    description: document.getElementById('shop-new-desc').value.trim(),
+    category: document.getElementById('shop-new-cat').value,
+    price: parseInt(document.getElementById('shop-new-price').value) || 0,
+    items,
+  };
+  if (!pkg.id || !pkg.name) return toast('ID and Name required', 'error');
+  const res = await api('/api/shop', { method: 'POST', body: JSON.stringify(pkg) });
+  toast(res.message, res.ok ? 'success' : 'error');
+  if (res.ok) { document.getElementById('shop-new-form').style.display = 'none'; loadShopAdmin(); }
+}
+
+async function togglePackage(id, enabled) {
+  const res = await api('/api/shop/' + id, { method: 'PUT', body: JSON.stringify({ enabled }) });
+  toast(res.message, res.ok ? 'success' : 'error');
+  if (res.ok) loadShopAdmin();
+}
+
+async function grantPackage(id) {
+  const res = await api('/api/shop/' + id + '/grant', { method: 'POST' });
+  if (res.ok) {
+    const summary = res.results.map(r => (r.ok ? '✅' : '❌') + ' ' + r.name + ' x' + r.qty).join('\n');
+    toast('Granted ' + res.package + '\n' + summary, 'success');
+  } else toast(res.message, 'error');
+}
+
+async function deletePackage(id) {
+  if (!confirm('Delete package "' + id + '"?')) return;
+  const res = await api('/api/shop/' + id, { method: 'DELETE' });
+  toast(res.message, res.ok ? 'success' : 'error');
+  if (res.ok) loadShopAdmin();
 }
 
 // ── Toast ──

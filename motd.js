@@ -155,34 +155,78 @@ async function updateMOTD() {
   return motd;
 }
 
-// ── Post to Discord webhook ──
-function postToWebhook(motd) {
-  const webhookUrl = process.env.DISCORD_CONAN_WEBHOOK;
-  if (!webhookUrl) return Promise.resolve();
+// ── Theme colors for Discord embed sidebar ──
+const THEME_COLORS = {
+  combat: 0xc0392b,   // red
+  pets: 0x27ae60,     // green
+  building: 0xf39c12, // yellow
+  survival: 0x3498db, // blue
+  lore: 0x9b59b6,     // purple
+  tips: 0x1abc9c,     // teal
+};
+const THEME_ICONS = {
+  combat: '⚔', pets: '🐾', building: '🏗', survival: '🌿', lore: '📜', tips: '💡',
+};
+
+// ── Webhook edit-or-create (shared pattern with bot.js) ──
+const WEBHOOK_MSG_FILE = path.join(__dirname, 'data', 'webhook-messages.json');
+function loadWebhookMsgs() { try { return JSON.parse(fs.readFileSync(WEBHOOK_MSG_FILE, 'utf8')); } catch { return {}; } }
+function saveWebhookMsgs(d) { const dir = path.dirname(WEBHOOK_MSG_FILE); if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(WEBHOOK_MSG_FILE, JSON.stringify(d, null, 2)); }
+
+function webhookRequest(method, urlPath, payload) {
   const https = require('https');
-  const url = new (require('url').URL)(webhookUrl);
-  const payload = JSON.stringify({
-    username: 'GRUDGE EXILES',
-    content: null,
-    embeds: [{
-      title: '📜 Message of the Day',
-      description: motd.raw,
-      color: 0xc0392b,
-      fields: [
-        { name: '🎯 Theme', value: motd.theme, inline: true },
-        { name: '📅 Date', value: motd.date, inline: true },
-        { name: '🔗 Connect', value: '`76.31.186.50:7777`', inline: true },
-      ],
-      footer: { text: 'conan.grudge-studio.com | Changes daily at midnight' },
-    }]
-  });
-  return new Promise((resolve) => {
-    const req = https.request(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, (res) => {
-      let body = ''; res.on('data', c => body += c); res.on('end', () => { console.log('[MOTD] Webhook posted:', res.statusCode); resolve(); });
+  return new Promise((resolve, reject) => {
+    const opts = { hostname: 'discord.com', path: urlPath, method, headers: { 'Content-Type': 'application/json' } };
+    if (payload) opts.headers['Content-Length'] = Buffer.byteLength(payload);
+    const req = https.request(opts, res => {
+      let body = ''; res.on('data', c => body += c);
+      res.on('end', () => { try { resolve({ status: res.statusCode, data: JSON.parse(body || '{}') }); } catch { resolve({ status: res.statusCode, data: {} }); } });
     });
-    req.on('error', e => { console.log('[MOTD] Webhook failed:', e.message); resolve(); });
-    req.write(payload); req.end();
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
   });
+}
+
+// ── Post to Discord webhook (persistent — edits existing MOTD message) ──
+async function postToWebhook(motd) {
+  const webhookUrl = process.env.DISCORD_CONAN_WEBHOOK;
+  if (!webhookUrl) return;
+  const m = webhookUrl.match(/\/webhooks\/(\d+)\/([\w-]+)/);
+  if (!m) return;
+  const [, whId, whToken] = m;
+
+  const embed = {
+    title: `${THEME_ICONS[motd.theme] || '📜'} Message of the Day`,
+    description: `> *${motd.raw}*`,
+    color: THEME_COLORS[motd.theme] || 0xd4af37,
+    fields: [
+      { name: 'Theme', value: motd.theme.charAt(0).toUpperCase() + motd.theme.slice(1), inline: true },
+      { name: 'Date', value: motd.date, inline: true },
+      { name: 'Connect', value: '`76.31.186.50:7777`', inline: true },
+    ],
+    footer: { text: 'conan.grudge-studio.com • Changes daily at midnight' },
+  };
+
+  const payload = JSON.stringify({ username: 'GRUDGE EXILES', embeds: [embed] });
+  const stored = loadWebhookMsgs();
+  const msgId = stored.motd;
+
+  // Try PATCH first
+  if (msgId) {
+    const res = await webhookRequest('PATCH', `/api/webhooks/${whId}/${whToken}/messages/${msgId}`, payload);
+    if (res.status === 200) { console.log('[MOTD] Webhook edited'); return; }
+  }
+
+  // POST new
+  const res = await webhookRequest('POST', `/api/webhooks/${whId}/${whToken}?wait=true`, payload);
+  if (res.status === 200 && res.data.id) {
+    stored.motd = res.data.id;
+    saveWebhookMsgs(stored);
+    console.log('[MOTD] Webhook posted (new message)');
+  } else {
+    console.log('[MOTD] Webhook failed:', res.status);
+  }
 }
 
 // ── Export for use in bot.js ──
