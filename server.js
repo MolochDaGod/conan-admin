@@ -368,6 +368,37 @@ app.get('/api/serverinfo', (req, res) => {
   });
 });
 
+// Engine.ini settings (server browser name, ports)
+app.get('/api/engine', auth, (req, res) => {
+  try {
+    if (!fs.existsSync(ENGINE_PATH)) return res.json({ engine: {} });
+    const raw = fs.readFileSync(ENGINE_PATH, 'utf8');
+    res.json({ engine: raw });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/engine/servername', auth, (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ ok: false, message: 'name required' });
+    if (!fs.existsSync(ENGINE_PATH)) return res.status(404).json({ ok: false, message: 'Engine.ini not found' });
+    let ini = fs.readFileSync(ENGINE_PATH, 'utf8');
+    // Update ServerName in [OnlineSubsystemSteam] or [OnlineSubsystem] section
+    if (ini.match(/ServerName\s*=/)) {
+      ini = ini.replace(/ServerName\s*=.*/g, `ServerName=${name}`);
+    } else {
+      // Add it
+      if (ini.includes('[OnlineSubsystem]')) {
+        ini = ini.replace('[OnlineSubsystem]', `[OnlineSubsystem]\nServerName=${name}`);
+      } else {
+        ini += `\n[OnlineSubsystem]\nServerName=${name}\n`;
+      }
+    }
+    fs.writeFileSync(ENGINE_PATH, ini, 'utf8');
+    res.json({ ok: true, message: `Browser name updated to: ${name}. Restart server to apply.` });
+  } catch (e) { res.status(500).json({ ok: false, message: e.message }); }
+});
+
 // MOTD endpoint
 app.get('/api/motd', (req, res) => {
   const { generateMOTD } = require('./motd');
