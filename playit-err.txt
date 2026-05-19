@@ -1,0 +1,2 @@
+2026-05-18T22:09:24.396143Z  INFO playitd::daemon: Starting playitd socket_path=None secret_path=Some("C:\\Users\\david\\AppData\\Local\\playit_gg\\playit.toml") version=1.0.3
+2026-05-18T22:09:24.398997Z  INFO playitd::daemon: Waiting for frontend secret provisioning over IPC secret_path=C:\Users\david\AppData\Local\playit_gg\playit.toml

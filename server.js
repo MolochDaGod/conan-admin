@@ -14,7 +14,7 @@ const SETTINGS_PATH = path.join(CONAN_DIR, 'ConanSandbox', 'Saved', 'Config', 'W
 const ENGINE_PATH = path.join(CONAN_DIR, 'ConanSandbox', 'Saved', 'Config', 'WindowsServer', 'Engine.ini');
 const LOG_PATH = path.join(CONAN_DIR, 'ConanSandbox', 'Saved', 'Logs', 'ConanSandbox.log');
 const SERVER_EXE = path.join(CONAN_DIR, 'ConanSandboxServer.exe');
-const ADMIN_TOKEN = process.env.CONAN_ADMIN_TOKEN || 'grudge-conan-2026';
+const ADMIN_TOKEN = process.env.CONAN_ADMIN_TOKEN || 'admin123';
 const PORT = process.env.PORT || 3847;
 
 // ── Auth middleware ──

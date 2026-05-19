@@ -1,0 +1,22 @@
+[2026-05-18 20:05:21.046 #0] [SGID:0; TID:26144] IMPORTANT: DedicatedServerLauncher - DedicatedServerLauncher Started
+[2026-05-18 20:06:33.129 #0] [SGID:0; TID:26144] INFO2: IOFIle - INFO: Created directory: D:\ConanLauncher\DedicatedServerLauncher
+[2026-05-18 20:06:33.134 #0] [SGID:0; TID:26144] INFO2: IOFIle - INFO: Created directory: D:\ConanLauncher\DedicatedServerLauncher\ConanExilesDedicatedServer
+[2026-05-18 20:06:33.146 #0] [SGID:0; TID:26144] INFO2: IOFIle - INFO: Created directory: D:\ConanLauncher\DedicatedServerLauncher\ConanExilesDedicatedServer\ConanSandbox
+[2026-05-18 20:06:33.160 #0] [SGID:0; TID:26144] INFO2: IOFIle - INFO: Created directory: D:\ConanLauncher\DedicatedServerLauncher\ConanExilesDedicatedServer\ConanSandbox\Saved
+[2026-05-18 20:06:33.165 #0] [SGID:0; TID:26144] INFO2: IOFIle - INFO: Created directory: D:\ConanLauncher\DedicatedServerLauncher\ConanExilesDedicatedServer\ConanSandbox\Saved\Config
+[2026-05-18 20:06:33.169 #0] [SGID:0; TID:26144] INFO2: IOFIle - INFO: Created directory: D:\ConanLauncher\DedicatedServerLauncher\ConanExilesDedicatedServer\ConanSandbox\Saved\Config\WindowsServer
+[2026-05-18 20:06:56.925 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'The testing of the three UDP port was not successful, please check that no other application is using these ports and that the ports are accessible through your firewall and router' was answered by '1' 
+[2026-05-18 20:27:17.932 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'The testing of the three UDP port was not successful, please check that no other application is using these ports and that the ports are accessible through your firewall and router' was answered by '1' 
+[2026-05-18 20:29:46.573 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'The testing of the three UDP port was not successful, please check that no other application is using these ports and that the ports are accessible through your firewall and router' was answered by '1' 
+[2026-05-18 20:32:30.941 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'The testing of the three UDP port was not successful, please check that no other application is using these ports and that the ports are accessible through your firewall and router' was answered by '1' 
+[2026-05-18 20:33:29.094 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'The testing of the three UDP port was not successful, please check that no other application is using these ports and that the ports are accessible through your firewall and router' was answered by '1' 
+[2026-05-18 20:33:46.331 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'You have unsaved changes, starting the server will reset the values.
+Do you want to continue and lose your changes?' was answered by '6' 
+[2026-05-18 20:33:46.331 #0] [SGID:0; TID:26144] IMPORTANT: DedicatedServerLauncher - 'D:\ConanLauncher\DedicatedServerLauncher\steamcmd.exe' does not exist, going to create it
+[2026-05-18 20:36:23.274 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'The testing of the three UDP port was not successful, please check that no other application is using these ports and that the ports are accessible through your firewall and router' was answered by '1' 
+[2026-05-18 20:42:26.621 #0] [SGID:0; TID:26144] INFO2: IOFIle - INFO: Created directory: D:\ConanLauncher\DedicatedServerLauncher\ConanExilesDedicatedServer\ConanSandbox\Mods
+[2026-05-18 20:43:48.896 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'The testing of the three UDP port was not successful, please check that no other application is using these ports and that the ports are accessible through your firewall and router' was answered by '1' 
+[2026-05-18 20:44:34.677 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'Are you sure you want to close the Dedicated Server Launcher?' was answered by '7' 
+[2026-05-18 20:44:47.366 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'You have unsaved changes, starting the server will reset the values.
+Do you want to continue and lose your changes?' was answered by '6' 
+[2026-05-18 20:45:14.935 #0] [SGID:0; TID:26144] IMPORTANT: Server - [MessageBox] Message 'Are you sure you want to close the Dedicated Server Launcher?' was answered by '6' 
