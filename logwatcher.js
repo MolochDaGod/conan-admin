@@ -91,8 +91,11 @@ function handleChatCommand(player, message, rconFn, discordClient) {
         return;
       }
       const h = homes[key][name];
-      // Teleport via RCON — note: only works if player is admin or admin runs it
-      rconFn(`con TeleportPlayer ${h.x} ${h.y} ${h.z}`).catch(() => {});
+      // Two-step teleport: move admin to coords, then pull player to admin
+      rconFn(`con TeleportPlayer ${h.x} ${h.y} ${h.z}`)
+        .then(() => new Promise(r => setTimeout(r, 500)))
+        .then(() => rconFn(`con TeleportToMe ${player}`))
+        .catch(() => {});
       broadcast(rconFn, `[GRUDGE] Teleporting ${player} to home '${name}'`);
       postChatToDiscord(discordClient, `🏠 **${player}** → home **${name}** (\`${h.x}, ${h.y}, ${h.z}\`)`);
       break;
@@ -138,7 +141,11 @@ function handleChatCommand(player, message, rconFn, discordClient) {
         return;
       }
       const w = warps[name];
-      rconFn(`con TeleportPlayer ${w.x} ${w.y} ${w.z}`).catch(() => {});
+      // Two-step: admin teleports to warp, then pulls player
+      rconFn(`con TeleportPlayer ${w.x} ${w.y} ${w.z}`)
+        .then(() => new Promise(r => setTimeout(r, 500)))
+        .then(() => rconFn(`con TeleportToMe ${player}`))
+        .catch(() => {});
       broadcast(rconFn, `[GRUDGE] Warping ${player} to '${name}'`);
       postChatToDiscord(discordClient, `🌀 **${player}** warped to **${name}**`);
       break;

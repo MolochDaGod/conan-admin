@@ -79,6 +79,9 @@ function getProcessInfo() {
   } catch { return null; }
 }
 
+// ── Bot admin puppet character (always-online invisible admin for teleports) ──
+const BOT_ADMIN_CHAR = process.env.BOT_ADMIN_CHAR || 'ale';
+
 // ── Embed colors ──
 const COLORS = { red: 0xc0392b, green: 0x27ae60, yellow: 0xf39c12, blue: 0x3498db, purple: 0x9b59b6, gold: 0xd4af37 };
 
@@ -367,6 +370,16 @@ client.once('ready', async () => {
   heartbeat();
   setInterval(heartbeat, 300000);
 
+  // Initialize bot admin puppet character (invisible + god mode)
+  console.log(`[Bot] Admin puppet character: ${BOT_ADMIN_CHAR}`);
+  try {
+    await rcon(`con MakeMeInvisible`);
+    await rcon(`con God`);
+    console.log(`[Bot] ${BOT_ADMIN_CHAR} set to invisible + god mode`);
+  } catch (e) {
+    console.log(`[Bot] Could not set ${BOT_ADMIN_CHAR} invisible (may need to be online):`, e.message);
+  }
+
   // Start in-game chat log watcher (bridges !sethome, !home, !warp from in-game to bot)
   const { startWatcher } = require('./logwatcher');
   startWatcher(rcon, client);
@@ -582,13 +595,16 @@ client.on('interactionCreate', async interaction => {
         const uid = interaction.user.id;
         if (!homes[uid]?.[name]) return interaction.reply({ content: `❌ No home named **${name}**. Check \`/homes\`.`, ephemeral: true });
         const h = homes[uid][name];
-        // Get linked Steam ID
         const players = load(PLAYERS_FILE);
         if (!players[uid]) return interaction.reply({ content: '❌ Link your Steam ID first with `/link <steamid>`.', ephemeral: true });
+        const playerName = players[uid].steamId;
         await interaction.deferReply({ ephemeral: true });
         try {
+          // Two-step via bot puppet: teleport ale to coords, then pull player
           await rcon(`con TeleportPlayer ${h.x} ${h.y} ${h.z}`);
-          return interaction.editReply(`🏠 Teleporting to **${name}** (\`${h.x}, ${h.y}, ${h.z}\`)\n⚠ *You must be the admin character in-game, or use the admin panel to target teleport.*`);
+          await new Promise(r => setTimeout(r, 500));
+          await rcon(`con TeleportToMe ${playerName}`);
+          return interaction.editReply(`🏠 Teleporting you to **${name}** (\`${h.x}, ${h.y}, ${h.z}\`)`);
         } catch (e) {
           return interaction.editReply(`RCON error: ${e.message}`);
         }
@@ -624,9 +640,16 @@ client.on('interactionCreate', async interaction => {
         const warps = load(WARPS_FILE);
         if (!warps[name]) return interaction.reply({ content: `❌ No warp **${name}**. See \`/warps\`.`, ephemeral: true });
         const w = warps[name];
+        const players2 = load(PLAYERS_FILE);
+        const uid2 = interaction.user.id;
+        if (!players2[uid2]) return interaction.reply({ content: '❌ Link your Steam ID first with `/link <steamid>`.', ephemeral: true });
+        const playerName2 = players2[uid2].steamId;
         await interaction.deferReply({ ephemeral: true });
         try {
+          // Two-step via bot puppet: teleport ale to warp, then pull player
           await rcon(`con TeleportPlayer ${w.x} ${w.y} ${w.z}`);
+          await new Promise(r => setTimeout(r, 500));
+          await rcon(`con TeleportToMe ${playerName2}`);
           return interaction.editReply(`🌀 Warping to **${name}** (\`${w.x}, ${w.y}, ${w.z}\`)\n📍 ${w.desc || ''}`);
         } catch (e) {
           return interaction.editReply(`RCON error: ${e.message}`);
@@ -677,9 +700,14 @@ client.on('interactionCreate', async interaction => {
       case 'spawn': {
         const spawnData = load(SPAWNS_FILE);
         if (!spawnData.x) return interaction.reply({ content: '❌ No custom spawn set. Ask an admin to use `/setspawn`.', ephemeral: true });
+        const players3 = load(PLAYERS_FILE);
+        const uid3 = interaction.user.id;
+        if (!players3[uid3]) return interaction.reply({ content: '❌ Link your Steam ID first with `/link <steamid>`.', ephemeral: true });
         await interaction.deferReply({ ephemeral: true });
         try {
           await rcon(`con TeleportPlayer ${spawnData.x} ${spawnData.y} ${spawnData.z}`);
+          await new Promise(r => setTimeout(r, 500));
+          await rcon(`con TeleportToMe ${players3[uid3].steamId}`);
           return interaction.editReply(`📍 Teleporting to spawn (\`${spawnData.x}, ${spawnData.y}, ${spawnData.z}\`)`);
         } catch (e) {
           return interaction.editReply(`RCON error: ${e.message}`);
