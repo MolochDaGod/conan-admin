@@ -45,17 +45,18 @@ Internet
 
 || Setting | Value | Effect |
 ||-------------------------------|-------|--------------------------------------|
-|| PlayerDamageMultiplier | 1.0 | Weapons deal full damage |
+|| PlayerDamageMultiplier | 1.4 | Weapons deal 40% more damage |
 || PlayerDamageTakenMultiplier | 0.4 | Players take 40% of incoming damage (60% reduction) |
+|| PlayerHealthMultiplier | 2.0 | Players have 2x health |
+|| NPCHealthMultiplier | 2.0 | NPCs have 2x health |
 || PetDamageMultiplier | 2.0 | Pets hit 2x harder |
-|| PetDamageTakenMultiplier | 0.5 | Pets take half damage |
-|| PetHealthMultiplier | 1.5 | Pets have 50% more HP |
+|| PetHealthMultiplier | 3.0 | Pets have 3x health |
 || HarvestAmountMultiplier | 3.0 | 3x resource gathering |
 || PlayerXPRateMultiplier | 3.0 | 3x XP across all sources |
 || DropEquipmentOnDeath | True | Full loot PVP |
 || EverybodyCanLootCorpse | True | Anyone can loot your body |
 
-Weapons hit at full base damage but players have 60% damage reduction, making fights longer and more strategic. Both direct hits and DoTs are equally affected by the reduction, so all weapon types and combat styles are viable. Gear, armor, and food management matter more than ever.
+Weapons hit at 1.4x but every entity has 2x health (pets 3x) and players have 60% damage reduction. Fights are long, strategic wars of attrition. All weapon types and combat styles are viable — gear, armor, food, and DoT stacking all matter.
 
 All settings are editable live via the admin panel (restart required to apply).
 

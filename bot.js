@@ -379,7 +379,7 @@ client.on('interactionCreate', async interaction => {
           .addFields(
             { name: '🔗 Direct Connect', value: '`76.31.186.50:7777`' },
             { name: '🌐 Admin Panel', value: '[conan.grudge-studio.com](https://conan.grudge-studio.com)' },
-            { name: '⚔ Balance', value: '• Weapon damage: **1.0x** (full)\n• Damage taken: **0.4x** (60% reduction)\n• Harvest: **3x**\n• XP: **3x** all sources\n• Pets: **2x damage**, **0.5x taken**' },
+            { name: '⚔ Balance', value: '• Weapon damage: **1.4x**\n• Damage taken: **0.4x** (60% reduction)\n• All health: **2x** (pets 3x)\n• Harvest: **3x** \u2022 XP: **3x**\n• Pets: **2x damage**' },
             { name: '💀 Loot', value: 'Full loot on death — everyone can loot corpses' },
             { name: '🐾 Followers', value: 'Max 2 thralls/pets following' },
             { name: '🔧 Crafting', value: '0.5x craft time, 3x craft XP' },
