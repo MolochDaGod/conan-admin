@@ -186,80 +186,105 @@
 
 <!-- Landing Page (public) -->
 <div id="landing-page">
-  <div style="max-width:900px;margin:0 auto;padding:2rem">
-    <div style="text-align:center;padding:3rem 0 2rem;position:relative">
-      <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:300px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
-      <svg width="80" height="80" viewBox="0 0 100 100" style="margin-bottom:1rem;filter:drop-shadow(0 0 20px rgba(212,175,55,.3))">
-        <circle cx="50" cy="50" r="45" fill="none" stroke="var(--gold)" stroke-width="2" opacity=".6"/>
-        <circle cx="50" cy="50" r="38" fill="none" stroke="var(--gold)" stroke-width="1" opacity=".3"/>
-        <text x="50" y="42" text-anchor="middle" font-family="Cinzel Decorative,serif" font-size="14" font-weight="900" fill="url(#goldGrad)">GRUDGE</text>
-        <text x="50" y="58" text-anchor="middle" font-family="Cinzel,serif" font-size="10" font-weight="700" fill="var(--gold-dim)" letter-spacing="3">CONAN</text>
-        <text x="50" y="70" text-anchor="middle" font-family="Cinzel,serif" font-size="7" fill="var(--gold-dim)" letter-spacing="2" opacity=".7">EXILES</text>
-        <defs><linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f4d03f"/><stop offset="50%" stop-color="#d4af37"/><stop offset="100%" stop-color="#8c7420"/></linearGradient></defs>
-      </svg>
-      <h1 style="font-family:var(--font-brand);font-size:clamp(2rem,6vw,3rem);font-weight:900;letter-spacing:.12em;background:linear-gradient(180deg,#f4d03f 0%,#d4af37 50%,#8c7420 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 12px rgba(212,175,55,.35))">GRUDGE EXILES</h1>
-      <p style="font-family:var(--font-heading);font-size:clamp(.9rem,2vw,1.15rem);letter-spacing:.25em;color:var(--gold-dim);text-transform:uppercase;margin-top:.5rem">Hit Hard, Die Slow</p>
-      <p style="color:var(--text-dim);font-size:.85rem;margin-top:.5rem">Full Loot PVP • Conan Exiles Enhanced (UE5) • No Mods</p>
-      <div id="landing-status" style="margin-top:1rem"></div>
-      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
-    </div>
+  <!-- Hero Section -->
+  <div style="position:relative;min-height:100vh;background:url('/img/hero.jpg') center top/cover no-repeat;display:flex;flex-direction:column;align-items:center;justify-content:center">
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.3) 0%,rgba(0,0,0,.6) 50%,rgba(10,10,15,.95) 100%)"></div>
+    <div style="position:relative;z-index:1;text-align:center;padding:2rem;max-width:700px">
+      <div id="landing-status" style="margin-bottom:1rem"></div>
+      <h1 style="font-family:var(--font-brand);font-size:clamp(2.5rem,8vw,4.5rem);font-weight:900;letter-spacing:.08em;background:linear-gradient(180deg,#f4d03f 0%,#d4af37 40%,#8c7420 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 4px 20px rgba(212,175,55,.5));line-height:1.1">GRUDGE<br>EXILES</h1>
+      <p style="font-family:var(--font-heading);font-size:clamp(1rem,3vw,1.4rem);letter-spacing:.3em;color:var(--gold-dim);text-transform:uppercase;margin-top:.75rem;text-shadow:0 2px 8px rgba(0,0,0,.8)">Survive. Conquer. Raid.</p>
+      <p style="color:var(--text);font-size:1rem;margin-top:1rem;text-shadow:0 1px 4px rgba(0,0,0,.9)">Full Loot PVP • 2x Health • 1.4x Damage • 60% DR • 3x Rates</p>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem">
-      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border)">
-        <h3 style="color:var(--accent);margin-bottom:1rem">🔗 Connect</h3>
-        <p><strong>Direct Connect:</strong> <code style="color:var(--yellow);background:var(--surface2);padding:2px 8px;border-radius:4px">76.31.186.50:9300</code></p>
-        <p style="margin-top:0.5rem;color:var(--text-dim)">Search "Grudges PvP" in the server browser</p>
-      </div>
-      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border)">
-        <h3 style="color:var(--accent);margin-bottom:1rem">💬 Discord</h3>
-        <p>Join our Discord for slash commands, warps, homes, and server updates.</p>
-        <p style="margin-top:0.5rem"><strong>Bot Commands:</strong> /status /warps /sethome /home /rules /kit</p>
-      </div>
-    </div>
+      <!-- One-Click Join Button -->
+      <a href="steam://connect/76.31.186.50:9300" style="display:inline-block;margin-top:2rem;padding:18px 50px;font-family:var(--font-heading);font-size:1.3rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#c0392b 0%,#8b0000 100%);border:2px solid #d4af37;border-radius:8px;text-decoration:none;box-shadow:0 0 30px rgba(192,57,43,.4),0 0 60px rgba(212,175,55,.15),inset 0 1px 0 rgba(255,255,255,.1);transition:all .3s;cursor:pointer" onmouseover="this.style.transform='translateY(-3px) scale(1.02)';this.style.boxShadow='0 0 40px rgba(192,57,43,.6),0 0 80px rgba(212,175,55,.3)'" onmouseout="this.style.transform='';this.style.boxShadow='0 0 30px rgba(192,57,43,.4),0 0 60px rgba(212,175,55,.15),inset 0 1px 0 rgba(255,255,255,.1)'">&#9876; Join Server</a>
+      <p style="color:var(--text-dim);font-size:.8rem;margin-top:.75rem">or Direct Connect: <code style="color:var(--yellow);background:rgba(0,0,0,.5);padding:2px 8px;border-radius:4px">76.31.186.50:9300</code></p>
 
-    <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border);margin-bottom:1.5rem">
-      <h3 style="color:var(--accent);margin-bottom:1rem">⚔ Server Balance — What Makes Us Different</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
-        <div>
-          <h4 style="color:var(--yellow)">Combat</h4>
-          <p>Weapon Damage: <strong>1.4x</strong></p>
-          <p>Damage Taken: <strong>0.4x (60% Reduction)</strong></p>
-          <p>Player Health: <strong>2x</strong></p>
-          <p>NPC Health: <strong>2x</strong></p>
+      <div style="margin-top:2rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <div style="background:rgba(0,0,0,.6);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">1.4x</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Damage</div>
         </div>
-        <div>
-          <h4 style="color:var(--yellow)">Pets & Thralls</h4>
-          <p>Pet Damage: <strong>2x</strong></p>
-          <p>Pet Health: <strong>3x</strong></p>
-          <p>Taming Speed: <strong>3x faster</strong></p>
-          <p>Follower Rescue: <strong>30s cooldown</strong></p>
+        <div style="background:rgba(0,0,0,.6);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">2x</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Health</div>
         </div>
-        <div>
-          <h4 style="color:var(--yellow)">Rates</h4>
-          <p>Harvest: <strong>3x</strong></p>
-          <p>XP: <strong>3x all</strong></p>
-          <p>Craft Cost: <strong>0.5x</strong></p>
-          <p>Craft Speed: <strong>2x</strong></p>
+        <div style="background:rgba(0,0,0,.6);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">60%</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">DR</div>
+        </div>
+        <div style="background:rgba(0,0,0,.6);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">3x</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Rates</div>
+        </div>
+        <div style="background:rgba(0,0,0,.6);border:1px solid rgba(192,57,43,.5);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--red)">💀</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Full Loot</div>
         </div>
       </div>
     </div>
+    <!-- Scroll indicator -->
+    <div style="position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:1;animation:bounce 2s infinite">
+      <div style="color:var(--gold-dim);font-size:1.5rem">▼</div>
+    </div>
+  </div>
 
-    <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border);margin-bottom:1.5rem">
-      <h3 style="color:var(--accent);margin-bottom:1rem">🚀 Getting Started</h3>
-      <ol style="line-height:2;padding-left:1.5rem">
-        <li><strong>Connect:</strong> Direct Connect to <code style="color:var(--yellow)">76.31.186.50:9300</code></li>
-        <li><strong>Get Sorcery:</strong> Head to Shaleback Hollow cave (south of the river) or use Discord <code>/warp sorcery-cave</code></li>
-        <li><strong>Set a Home:</strong> Use Discord <code>/sethome base</code> to save your location</li>
-        <li><strong>Fast Travel:</strong> Map Rooms at every obelisk! Use <code>/warps</code> to see all warp points</li>
-        <li><strong>Get a Pet:</strong> Pets do 2x damage and can be revived mid-fight — they're the meta</li>
-        <li><strong>Fight Smart:</strong> Weapons hit 1.4x and everyone has 2x health + 60% DR. Fights are long — bring food, stack DoTs, and outlast your enemy</li>
-      </ol>
+  <!-- Content Section -->
+  <div style="max-width:960px;margin:0 auto;padding:3rem 2rem;position:relative">
+    <!-- Gold divider -->
+    <div style="width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-bottom:3rem"></div>
+
+    <!-- Balance Cards -->
+    <h2 style="font-family:var(--font-heading);text-align:center;color:var(--gold);font-size:1.6rem;letter-spacing:.15em;margin-bottom:2rem">⚔ Server Balance</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:3rem">
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold))"></div>
+        <h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">⚔ Combat</h4>
+        <p>Weapon Damage: <strong style="color:var(--yellow)">1.4x</strong></p>
+        <p>Damage Taken: <strong style="color:var(--yellow)">0.4x</strong></p>
+        <p>Player Health: <strong style="color:var(--yellow)">2x</strong></p>
+        <p>NPC Health: <strong style="color:var(--yellow)">2x</strong></p>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--gold))"></div>
+        <h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">🐾 Pets & Thralls</h4>
+        <p>Pet Damage: <strong style="color:var(--yellow)">2x</strong></p>
+        <p>Pet Health: <strong style="color:var(--yellow)">3x</strong></p>
+        <p>Taming Speed: <strong style="color:var(--yellow)">3x faster</strong></p>
+        <p>Minion Damage: <strong style="color:var(--yellow)">1.5x</strong></p>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--gold))"></div>
+        <h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">📦 Rates</h4>
+        <p>Harvest: <strong style="color:var(--yellow)">3x</strong></p>
+        <p>XP: <strong style="color:var(--yellow)">3x all</strong></p>
+        <p>Craft Cost: <strong style="color:var(--yellow)">0.5x</strong></p>
+        <p>Craft Speed: <strong style="color:var(--yellow)">2x</strong></p>
+      </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem">
-      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border)">
-        <h3 style="color:var(--accent);margin-bottom:1rem">🌀 Warp Points</h3>
-        <ul style="list-style:none;line-height:2">
+    <!-- Gold divider -->
+    <div style="width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border-gold),transparent);margin-bottom:3rem"></div>
+
+    <!-- Rules & Warps side by side -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:3rem">
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),#8b0000)"></div>
+        <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">📜 Server Rules</h3>
+        <ol style="line-height:2.2;padding-left:1.2rem;color:var(--text)">
+          <li>No exploits, glitches, or undermesh</li>
+          <li><strong style="color:var(--red)">PVP is always on</strong> — fight or die</li>
+          <li><strong style="color:var(--red)">Full loot</strong> — gear at your own risk</li>
+          <li>No foundation spam or blocking resources</li>
+          <li>Max clan size: <strong>10</strong></li>
+          <li>Outlast your enemy — adapt or perish</li>
+          <li>Respect other players in chat</li>
+          <li><strong>Admin decisions are final</strong></li>
+        </ol>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--gold))"></div>
+        <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">🌀 Warp Points</h3>
+        <ul style="list-style:none;line-height:2.2">
           <li>🌀 <strong>noob-river</strong> — Starting area</li>
           <li>🌀 <strong>sepermeru</strong> — City of Relic Hunters</li>
           <li>🌀 <strong>mounds</strong> — Mounds of the Dead</li>
@@ -268,29 +293,46 @@
           <li>🌀 <strong>unnamed-city</strong> — Unnamed City</li>
           <li>🔮 <strong>sorcery-cave</strong> — Unlock sorcery here!</li>
         </ul>
-      </div>
-      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border)">
-        <h3 style="color:var(--accent);margin-bottom:1rem">📜 Rules</h3>
-        <ol style="line-height:2;padding-left:1.5rem">
-          <li>No exploits, glitches, or undermesh</li>
-          <li>PVP is always on — fight or die</li>
-          <li>Full loot — gear at your own risk</li>
-          <li>No foundation spam or blocking resources</li>
-          <li>Max clan size: 10</li>
-        <li>Outlast your enemy — adapt or perish</li>
-          <li>Admin decisions are final</li>
-        </ol>
+        <p style="margin-top:.75rem;color:var(--text-dim);font-size:.85rem">Type <code style="color:var(--yellow)">/warps</code> in Discord or <code style="color:var(--yellow)">!warps</code> in-game</p>
       </div>
     </div>
 
-    <div id="landing-motd" style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border);margin-bottom:2rem;text-align:center"></div>
+    <!-- Getting Started -->
+    <div style="background:var(--surface);border-radius:10px;padding:2rem;border:1px solid var(--border-gold);margin-bottom:3rem;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--accent-dark),var(--gold))"></div>
+      <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">🚀 Getting Started</h3>
+      <ol style="line-height:2.4;padding-left:1.2rem">
+        <li><strong>Join:</strong> Click the button above or Direct Connect to <code style="color:var(--yellow)">76.31.186.50:9300</code></li>
+        <li><strong>Get Sorcery:</strong> Head to Shaleback Hollow cave or <code style="color:var(--yellow)">/warp sorcery-cave</code></li>
+        <li><strong>Set a Home:</strong> Type <code style="color:var(--yellow)">!sethome base X Y Z</code> in-game chat or <code style="color:var(--yellow)">/sethome</code> in Discord</li>
+        <li><strong>Fast Travel:</strong> Map Rooms at every obelisk! Type <code style="color:var(--yellow)">!warps</code> in-game</li>
+        <li><strong>Get a Pet:</strong> Pets do 2x damage with 3x health — they're absolute tanks</li>
+        <li><strong>Fight Smart:</strong> Everyone has 2x health + 60% DR. Bring food, stack DoTs, outlast your enemy</li>
+      </ol>
+    </div>
 
+    <!-- MOTD -->
+    <div id="landing-motd" style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);margin-bottom:2rem;text-align:center"></div>
+
+    <!-- Bottom Join + Admin -->
     <div style="text-align:center;padding:2rem 0">
-      <button onclick="document.getElementById('landing-page').style.display='none';document.getElementById('login-screen').style.display='flex'" style="padding:12px 30px;font-size:1rem">🔒 Admin Login</button>
-      <p style="color:var(--text-dim);margin-top:1rem;font-size:0.8rem">Created by Racalvin The Pirate King — Grudge Studio</p>
+      <a href="steam://connect/76.31.186.50:9300" style="display:inline-block;padding:14px 40px;font-family:var(--font-heading);font-size:1.1rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#c0392b,#8b0000);border:2px solid var(--gold);border-radius:8px;text-decoration:none;box-shadow:0 0 20px rgba(192,57,43,.3);transition:all .3s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">&#9876; Join Server Now</a>
+      <div style="margin-top:1.5rem">
+        <button onclick="document.getElementById('landing-page').style.display='none';document.getElementById('login-screen').style.display='flex'" class="secondary" style="padding:10px 24px;font-size:.85rem">🔒 Admin Login</button>
+      </div>
+      <div style="margin-top:2rem;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border-gold),transparent)"></div>
+      <p style="color:var(--gold-dim);margin-top:1rem;font-size:0.8rem;font-family:var(--font-heading);letter-spacing:.15em">Created by Racalvin The Pirate King — Grudge Studio</p>
+      <p style="color:var(--text-dim);margin-top:.25rem;font-size:.7rem">conan.grudge-studio.com</p>
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+  #landing-page .field-row { background: transparent !important; }
+  #landing-page p { line-height: 1.8; }
+  #landing-page ol li, #landing-page ul li { font-size: 0.95rem; }
+</style>
 
 <!-- Login (hidden by default) -->
 <div id="login-screen" style="display:none">
