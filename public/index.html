@@ -3,16 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GRUDGE EXILES — Server Admin</title>
+<title>GRUDGE EXILES — Conan Server</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@700;900&family=Inter:wght@300;400;500;600&family=Spectral+SC:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0d0d; --surface: #1a1a1a; --surface2: #242424; --border: #333;
-    --text: #e0e0e0; --text-dim: #888; --accent: #c0392b; --accent-hover: #e74c3c;
-    --green: #27ae60; --yellow: #f39c12; --red: #c0392b;
-    --font: 'Segoe UI', system-ui, sans-serif;
+    --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a25; --border: #2a2a3a;
+    --text: #e8dfc8; --text-dim: #888; --accent: #d4af37; --accent-hover: #f4d03f;
+    --accent-dark: #8c7420; --green: #33aa55; --yellow: #f4d03f; --red: #cc3333;
+    --gold: #d4af37; --gold-light: #f4d03f; --gold-dim: #8b7355;
+    --border-gold: rgba(212,175,55,.3);
+    --font: 'Inter', system-ui, sans-serif;
+    --font-brand: 'Cinzel Decorative', 'Cinzel', serif;
+    --font-heading: 'Cinzel', serif;
+    --font-body: 'Inter', sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 
   /* ── Header ── */
   header {
@@ -175,10 +187,21 @@
 <!-- Landing Page (public) -->
 <div id="landing-page">
   <div style="max-width:900px;margin:0 auto;padding:2rem">
-    <div style="text-align:center;padding:3rem 0 2rem">
-      <h1 style="color:var(--accent);font-size:2.5rem;letter-spacing:4px">⚔ GRUDGE EXILES</h1>
-      <p style="color:var(--text);font-size:1.2rem;margin-top:0.5rem">DoTs Kill, Swords Don't — Full Loot PVP</p>
+    <div style="text-align:center;padding:3rem 0 2rem;position:relative">
+      <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:300px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
+      <svg width="80" height="80" viewBox="0 0 100 100" style="margin-bottom:1rem;filter:drop-shadow(0 0 20px rgba(212,175,55,.3))">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="var(--gold)" stroke-width="2" opacity=".6"/>
+        <circle cx="50" cy="50" r="38" fill="none" stroke="var(--gold)" stroke-width="1" opacity=".3"/>
+        <text x="50" y="42" text-anchor="middle" font-family="Cinzel Decorative,serif" font-size="14" font-weight="900" fill="url(#goldGrad)">GRUDGE</text>
+        <text x="50" y="58" text-anchor="middle" font-family="Cinzel,serif" font-size="10" font-weight="700" fill="var(--gold-dim)" letter-spacing="3">CONAN</text>
+        <text x="50" y="70" text-anchor="middle" font-family="Cinzel,serif" font-size="7" fill="var(--gold-dim)" letter-spacing="2" opacity=".7">EXILES</text>
+        <defs><linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f4d03f"/><stop offset="50%" stop-color="#d4af37"/><stop offset="100%" stop-color="#8c7420"/></linearGradient></defs>
+      </svg>
+      <h1 style="font-family:var(--font-brand);font-size:clamp(2rem,6vw,3rem);font-weight:900;letter-spacing:.12em;background:linear-gradient(180deg,#f4d03f 0%,#d4af37 50%,#8c7420 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 12px rgba(212,175,55,.35))">GRUDGE EXILES</h1>
+      <p style="font-family:var(--font-heading);font-size:clamp(.9rem,2vw,1.15rem);letter-spacing:.25em;color:var(--gold-dim);text-transform:uppercase;margin-top:.5rem">DoTs Kill, Swords Don't</p>
+      <p style="color:var(--text-dim);font-size:.85rem;margin-top:.5rem">Full Loot PVP • Conan Exiles Enhanced (UE5) • No Mods</p>
       <div id="landing-status" style="margin-top:1rem"></div>
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem">
