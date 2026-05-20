@@ -377,6 +377,19 @@ app.get('/api/engine', auth, (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.put('/api/engine', auth, (req, res) => {
+  try {
+    const { find, replace } = req.body;
+    if (!find || !replace) return res.status(400).json({ ok: false, message: 'find and replace required' });
+    if (!fs.existsSync(ENGINE_PATH)) return res.status(404).json({ ok: false, message: 'Engine.ini not found' });
+    let content = fs.readFileSync(ENGINE_PATH, 'utf8');
+    const regex = new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '.*');
+    content = content.replace(regex, replace);
+    fs.writeFileSync(ENGINE_PATH, content, 'utf8');
+    res.json({ ok: true, message: `Engine.ini updated: ${find} -> ${replace}. Restart to apply.` });
+  } catch (e) { res.status(500).json({ ok: false, message: e.message }); }
+});
+
 app.put('/api/engine/servername', auth, (req, res) => {
   try {
     const { name } = req.body;
