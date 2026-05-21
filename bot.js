@@ -40,7 +40,7 @@ function rcon(command) {
     const port = parseInt(process.env.RCON_PORT) || 25575;
     const pw = process.env.RCON_PASSWORD || '';
     let authDone = false, result = '';
-    const c = net.connect(port, '10.0.0.132', () => c.write(rconPacket(1, 3, pw)));
+    const c = net.connect(port, host, () => c.write(rconPacket(1, 3, pw)));
     c.setTimeout(8000);
     c.on('data', d => {
       const type = d.readInt32LE(8);
@@ -81,6 +81,61 @@ function getProcessInfo() {
 
 // ── Bot admin puppet character (always-online invisible admin for teleports) ──
 const BOT_ADMIN_CHAR = process.env.BOT_ADMIN_CHAR || 'ale';
+
+// ── Online player cache (polls listplayers every 60s) ──
+// Each entry: { idx, charName, playerName, userId, platformId, platform }
+let onlinePlayers = [];
+const ONLINE_CACHE_FILE = path.join(DATA_DIR, 'online-players.json');
+
+function parsePlayerList(raw) {
+  if (!raw || !raw.trim()) return [];
+  const lines = raw.trim().split('\n');
+  const players = [];
+  for (const line of lines) {
+    // Skip header line
+    if (line.includes('Idx') && line.includes('Char name')) continue;
+    // Format: "  0 | Racalvin Pirate King | TheAnteater#70957 | A-1250C4VC02 | 76561198113644718 | STEAM"
+    const parts = line.split('|').map(s => s.trim());
+    if (parts.length >= 6) {
+      players.push({
+        idx: parseInt(parts[0]) || 0,
+        charName: parts[1],
+        playerName: parts[2],
+        userId: parts[3],
+        platformId: parts[4],
+        platform: parts[5],
+      });
+    }
+  }
+  return players;
+}
+
+async function refreshOnlineCache() {
+  if (!isServerRunning()) { onlinePlayers = []; return; }
+  try {
+    const raw = await rcon('listplayers');
+    onlinePlayers = parsePlayerList(raw);
+    save(ONLINE_CACHE_FILE, { updated: Date.now(), players: onlinePlayers });
+  } catch {
+    // Keep stale cache on RCON failure
+  }
+}
+
+// Find a player in cache by character name (case-insensitive, partial match)
+function findOnlinePlayer(query) {
+  const q = query.toLowerCase();
+  // Exact match first
+  const exact = onlinePlayers.find(p => p.charName.toLowerCase() === q);
+  if (exact) return exact;
+  // Partial match
+  return onlinePlayers.find(p => p.charName.toLowerCase().includes(q));
+}
+
+// Resolve a Discord user's linked Steam ID
+function getLinkedSteamId(discordUserId) {
+  const players = load(PLAYERS_FILE);
+  return players[discordUserId]?.steamId || null;
+}
 
 // ── Embed colors ──
 const COLORS = { red: 0xc0392b, green: 0x27ae60, yellow: 0xf39c12, blue: 0x3498db, purple: 0x9b59b6, gold: 0xd4af37 };
@@ -261,11 +316,12 @@ const commands = [
     .addStringOption(o => o.setName('player').setDescription('Player name or Steam ID').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
-  // Link Steam ID
+  // Link character
   new SlashCommandBuilder().setName('link')
-    .setDescription('Link your Discord account to your Steam ID for teleport commands')
-    .addStringOption(o => o.setName('steamid').setDescription('Your Steam ID (from in-game player list)').setRequired(true)),
-  new SlashCommandBuilder().setName('unlink').setDescription('Unlink your Steam ID'),
+    .setDescription('Link your Discord to your in-game character (must be online)')
+    .addStringOption(o => o.setName('character').setDescription('Your in-game character name').setRequired(true)),
+  new SlashCommandBuilder().setName('unlink').setDescription('Unlink your character'),
+  new SlashCommandBuilder().setName('whoami').setDescription('Show your linked character info'),
 
   // MOTD
   new SlashCommandBuilder().setName('motd').setDescription('Show today\'s message of the day'),
@@ -369,6 +425,11 @@ client.once('ready', async () => {
   }
   heartbeat();
   setInterval(heartbeat, 300000);
+
+  // Online player cache — refresh every 60s
+  refreshOnlineCache();
+  setInterval(refreshOnlineCache, 60000);
+  console.log('[PlayerCache] Started polling every 60s');
 
   // Initialize bot admin puppet character (invisible + god mode)
   console.log(`[Bot] Admin puppet character: ${BOT_ADMIN_CHAR}`);
@@ -596,7 +657,7 @@ client.on('interactionCreate', async interaction => {
         if (!homes[uid]?.[name]) return interaction.reply({ content: `❌ No home named **${name}**. Check \`/homes\`.`, ephemeral: true });
         const h = homes[uid][name];
         const players = load(PLAYERS_FILE);
-        if (!players[uid]) return interaction.reply({ content: '❌ Link your Steam ID first with `/link <steamid>`.', ephemeral: true });
+        if (!players[uid]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>` (must be online).', ephemeral: true });
         const playerName = players[uid].steamId;
         await interaction.deferReply({ ephemeral: true });
         try {
@@ -642,7 +703,7 @@ client.on('interactionCreate', async interaction => {
         const w = warps[name];
         const players2 = load(PLAYERS_FILE);
         const uid2 = interaction.user.id;
-        if (!players2[uid2]) return interaction.reply({ content: '❌ Link your Steam ID first with `/link <steamid>`.', ephemeral: true });
+        if (!players2[uid2]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>` (must be online).', ephemeral: true });
         const playerName2 = players2[uid2].steamId;
         await interaction.deferReply({ ephemeral: true });
         try {
@@ -702,7 +763,7 @@ client.on('interactionCreate', async interaction => {
         if (!spawnData.x) return interaction.reply({ content: '❌ No custom spawn set. Ask an admin to use `/setspawn`.', ephemeral: true });
         const players3 = load(PLAYERS_FILE);
         const uid3 = interaction.user.id;
-        if (!players3[uid3]) return interaction.reply({ content: '❌ Link your Steam ID first with `/link <steamid>`.', ephemeral: true });
+        if (!players3[uid3]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>` (must be online).', ephemeral: true });
         await interaction.deferReply({ ephemeral: true });
         try {
           await rcon(`con TeleportPlayer ${spawnData.x} ${spawnData.y} ${spawnData.z}`);
@@ -741,20 +802,61 @@ client.on('interactionCreate', async interaction => {
         }
       }
 
-      // ═══ Steam Link ═══
+      // ═══ Character Link ═══
       case 'link': {
-        const steamId = interaction.options.getString('steamid');
+        const charQuery = interaction.options.getString('character');
+        // Refresh cache first to get latest player list
+        await refreshOnlineCache();
+        const match = findOnlinePlayer(charQuery);
+        if (!match) {
+          const onlineNames = onlinePlayers.map(p => `• **${p.charName}** (${p.playerName})`).join('\n');
+          return interaction.reply({
+            content: `❌ No online character matching "**${charQuery}**".\nYou must be logged into the server to link.\n\n` +
+              (onlineNames ? `**Currently online:**\n${onlineNames}` : '*No players online*'),
+            ephemeral: true,
+          });
+        }
         const players = load(PLAYERS_FILE);
-        players[interaction.user.id] = { steamId, linked: Date.now(), name: interaction.user.username };
+        players[interaction.user.id] = {
+          steamId: match.platformId,
+          charName: match.charName,
+          playerName: match.playerName,
+          userId: match.userId,
+          platform: match.platform,
+          linked: Date.now(),
+          discordName: interaction.user.username,
+        };
         save(PLAYERS_FILE, players);
-        return interaction.reply({ content: `🔗 Linked Discord to Steam ID \`${steamId}\``, ephemeral: true });
+        return interaction.reply({
+          content: `🔗 Linked! **${match.charName}** (${match.playerName}) → Steam \`${match.platformId}\``,
+          ephemeral: true,
+        });
       }
 
       case 'unlink': {
         const players = load(PLAYERS_FILE);
+        const existing = players[interaction.user.id];
         delete players[interaction.user.id];
         save(PLAYERS_FILE, players);
-        return interaction.reply({ content: '🔓 Steam ID unlinked.', ephemeral: true });
+        return interaction.reply({ content: existing ? `🔓 Unlinked **${existing.charName || 'character'}**.` : '🔓 Nothing was linked.', ephemeral: true });
+      }
+
+      case 'whoami': {
+        const players = load(PLAYERS_FILE);
+        const linked = players[interaction.user.id];
+        if (!linked) return interaction.reply({ content: '❌ Not linked. Log into the server and use `/link <character name>`.', ephemeral: true });
+        const isOnline = onlinePlayers.some(p => p.platformId === linked.steamId);
+        const embed = new EmbedBuilder()
+          .setTitle('🔗 Your Linked Character')
+          .setColor(isOnline ? COLORS.green : COLORS.red)
+          .addFields(
+            { name: 'Character', value: linked.charName || 'Unknown', inline: true },
+            { name: 'Player', value: linked.playerName || 'Unknown', inline: true },
+            { name: 'Steam ID', value: `\`${linked.steamId}\``, inline: true },
+            { name: 'Status', value: isOnline ? '🟢 Online' : '🔴 Offline', inline: true },
+            { name: 'Linked', value: `<t:${Math.floor(linked.linked / 1000)}:R>`, inline: true },
+          );
+        return interaction.reply({ embeds: [embed], ephemeral: true });
       }
 
       // ═══ MOTD ═══

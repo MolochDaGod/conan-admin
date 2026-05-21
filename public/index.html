@@ -4,28 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GRUDGE EXILES — Conan Server</title>
-
-<!-- Favicon — Grudge Studio logo from ObjectStore branding -->
-<link rel="icon" href="https://molochdagod.github.io/ObjectStore/branding/favicon-32x32.png" type="image/png" sizes="32x32">
-<link rel="apple-touch-icon" href="https://molochdagod.github.io/ObjectStore/branding/apple-touch-icon.png">
-<meta name="theme-color" content="#d4af37">
-
-<!-- Open Graph — controls how the link looks when shared on Discord, Twitter, etc. -->
-<meta property="og:title" content="GRUDGE EXILES — Conan Exiles PVP Server">
-<meta property="og:description" content="Full Loot PVP · 3x Rates · 2x NPC Damage · Enhanced Combat · Thralls Balanced for War. Join the Grudge Studio Conan Exiles server.">
-<meta property="og:image" content="https://conan.grudge-studio.com/img/hero.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://conan.grudge-studio.com/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Grudge Studio">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="GRUDGE EXILES — Conan Exiles PVP Server">
-<meta name="twitter:description" content="Full Loot PVP · 3x Rates · 2x NPC Damage · Enhanced Combat · Thralls Balanced for War.">
-<meta name="twitter:image" content="https://conan.grudge-studio.com/img/hero.jpg">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@700;900&family=Inter:wght@300;400;500;600&family=Spectral+SC:wght@400;600&display=swap" rel="stylesheet">
@@ -47,142 +25,730 @@
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
-  header { background: linear-gradient(135deg, #1a0a0a 0%, #0d0d0d 100%); border-bottom: 2px solid var(--accent); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #1a0a0a 0%, #0d0d0d 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+  }
   header h1 { font-size: 1.4rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
   header h1 span { color: var(--text); font-weight: 300; }
-  .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+  }
   .status-badge.online { background: rgba(39,174,96,0.15); color: var(--green); border: 1px solid var(--green); }
   .status-badge.offline { background: rgba(192,57,43,0.15); color: var(--red); border: 1px solid var(--red); }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; }
   .status-badge.online .status-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .status-badge.offline .status-dot { background: var(--red); }
-  #login-screen { display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 1rem; }
+
+  /* ── Login ── */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center; height: 100vh;
+    flex-direction: column; gap: 1rem;
+  }
   #login-screen h2 { color: var(--accent); font-size: 1.8rem; letter-spacing: 3px; }
-  #login-screen input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 12px 20px; border-radius: 6px; font-size: 1rem; width: 300px; text-align: center; }
+  #login-screen input {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 12px 20px; border-radius: 6px; font-size: 1rem; width: 300px; text-align: center;
+  }
   #login-screen button { width: 300px; }
-  .app { display: none; } .app.active { display: block; }
+
+  /* ── Layout ── */
+  .app { display: none; }
+  .app.active { display: block; }
   main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-  .controls { display: flex; gap: 12px; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
-  .controls .info { margin-left: auto; font-size: 0.85rem; color: var(--text-dim); }
+
+  /* ── Controls bar ── */
+  .controls {
+    display: flex; gap: 12px; margin-bottom: 2rem; flex-wrap: wrap; align-items: center;
+  }
+  .controls .info {
+    margin-left: auto; font-size: 0.85rem; color: var(--text-dim);
+  }
   .controls .info code { color: var(--yellow); background: var(--surface2); padding: 2px 8px; border-radius: 4px; }
-  button, .btn { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+
+  /* ── Buttons ── */
+  button, .btn {
+    background: var(--accent); color: #fff; border: none; padding: 10px 20px;
+    border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+    transition: all 0.2s;
+  }
   button:hover { background: var(--accent-hover); transform: translateY(-1px); }
   button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   button.secondary { background: var(--surface2); border: 1px solid var(--border); }
   button.secondary:hover { background: var(--border); }
-  button.green { background: var(--green); } button.green:hover { background: #2ecc71; }
-  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 2rem; overflow-x: auto; }
-  .tab { padding: 10px 20px; cursor: pointer; font-size: 0.85rem; color: var(--text-dim); border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: all 0.2s; }
-  .tab:hover { color: var(--text); } .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .settings-panel { display: none; } .settings-panel.active { display: block; }
+  button.green { background: var(--green); }
+  button.green:hover { background: #2ecc71; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 2rem;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 20px; cursor: pointer; font-size: 0.85rem; color: var(--text-dim);
+    border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── Settings panel ── */
+  .settings-panel { display: none; }
+  .settings-panel.active { display: block; }
   .settings-group { margin-bottom: 2rem; }
-  .settings-group h3 { color: var(--accent); font-size: 1rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 1px; }
-  .field-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-radius: 6px; margin-bottom: 4px; }
+  .settings-group h3 {
+    color: var(--accent); font-size: 1rem; margin-bottom: 1rem;
+    padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .field-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-radius: 6px; margin-bottom: 4px;
+  }
   .field-row:nth-child(even) { background: var(--surface); }
   .field-label { font-size: 0.9rem; flex: 1; }
   .field-input { flex: 0 0 220px; text-align: right; }
-  .field-input input[type="text"], .field-input input[type="number"] { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 4px; width: 200px; text-align: right; font-size: 0.9rem; }
+  .field-input input[type="text"], .field-input input[type="number"] {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 12px; border-radius: 4px; width: 200px; text-align: right; font-size: 0.9rem;
+  }
   .field-input input:focus { border-color: var(--accent); outline: none; }
+  /* Toggle switch */
   .toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
   .toggle input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 26px; transition: 0.3s; }
-  .toggle-slider:before { content: ''; position: absolute; height: 20px; width: 20px; left: 2px; bottom: 2px; background: var(--text-dim); border-radius: 50%; transition: 0.3s; }
+  .toggle-slider {
+    position: absolute; cursor: pointer; inset: 0; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 26px; transition: 0.3s;
+  }
+  .toggle-slider:before {
+    content: ''; position: absolute; height: 20px; width: 20px; left: 2px; bottom: 2px;
+    background: var(--text-dim); border-radius: 50%; transition: 0.3s;
+  }
   .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
   .toggle input:checked + .toggle-slider:before { transform: translateX(22px); background: #fff; }
+
+  /* Range slider */
   .range-wrap { display: flex; align-items: center; gap: 8px; }
-  .range-wrap input[type="range"] { -webkit-appearance: none; width: 140px; height: 4px; background: var(--border); border-radius: 2px; outline: none; }
-  .range-wrap input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; }
-  .range-val { font-size: 0.85rem; color: var(--yellow); min-width: 40px; text-align: right; font-family: monospace; }
-  .console-box { background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.8rem; max-height: 400px; overflow-y: auto; white-space: pre-wrap; color: #8f8; line-height: 1.5; }
-  .rcon-input { display: flex; gap: 8px; margin-top: 1rem; }
-  .rcon-input input { flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 6px; font-family: monospace; font-size: 0.9rem; }
-  .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 24px; font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 999; }
+  .range-wrap input[type="range"] {
+    -webkit-appearance: none; width: 140px; height: 4px; background: var(--border);
+    border-radius: 2px; outline: none;
+  }
+  .range-wrap input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); cursor: pointer;
+  }
+  .range-val {
+    font-size: 0.85rem; color: var(--yellow); min-width: 40px; text-align: right;
+    font-family: monospace;
+  }
+
+  /* ── RCON & Logs ── */
+  .console-box {
+    background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px;
+    padding: 1rem; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.8rem;
+    max-height: 400px; overflow-y: auto; white-space: pre-wrap; color: #8f8;
+    line-height: 1.5;
+  }
+  .rcon-input {
+    display: flex; gap: 8px; margin-top: 1rem;
+  }
+  .rcon-input input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 14px; border-radius: 6px; font-family: monospace; font-size: 0.9rem;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 12px 24px;
+    font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.3s;
+    z-index: 999;
+  }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.success { border-color: var(--green); color: var(--green); }
   .toast.error { border-color: var(--red); color: var(--red); }
-  .proc-info { display: flex; gap: 2rem; padding: 1rem; background: var(--surface); border-radius: 8px; margin-bottom: 2rem; flex-wrap: wrap; }
+
+  /* ── Process info ── */
+  .proc-info {
+    display: flex; gap: 2rem; padding: 1rem; background: var(--surface);
+    border-radius: 8px; margin-bottom: 2rem; flex-wrap: wrap;
+  }
   .proc-stat { text-align: center; }
   .proc-stat .val { font-size: 1.4rem; color: var(--yellow); font-weight: 700; }
   .proc-stat .lbl { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; }
 </style>
 </head>
 <body>
+
+<!-- Landing Page (public) -->
 <div id="landing-page">
-  <div style="position:relative;min-height:100vh;background:url('/img/hero.jpg') center top/cover no-repeat;display:flex;flex-direction:column;align-items:center;justify-content:center">
-    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.3) 0%,rgba(0,0,0,.6) 50%,rgba(10,10,15,.95) 100%)"></div>
-    <div style="position:relative;z-index:1;text-align:center;padding:2rem;max-width:700px">
+<!-- Hero Section -->
+  <div style="position:relative;min-height:100vh;background:url('/img/hero.jpg') center top/cover no-repeat;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.15) 40%,rgba(0,0,0,.5) 70%,rgba(10,10,15,.95) 100%)"></div>
+    <div style="position:relative;z-index:1;text-align:center;padding:2rem;max-width:700px;margin-bottom:4rem">
       <div id="landing-status" style="margin-bottom:1rem"></div>
-      <h1 style="font-family:var(--font-brand);font-size:clamp(2.5rem,8vw,4.5rem);font-weight:900;letter-spacing:.08em;background:linear-gradient(180deg,#f4d03f 0%,#d4af37 40%,#8c7420 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 4px 20px rgba(212,175,55,.5));line-height:1.1">GRUDGE<br>EXILES</h1>
-      <p style="font-family:var(--font-heading);font-size:clamp(1rem,3vw,1.4rem);letter-spacing:.3em;color:var(--gold-dim);text-transform:uppercase;margin-top:.75rem;text-shadow:0 2px 8px rgba(0,0,0,.8)">Survive. Conquer. Raid.</p>
-      <p style="color:var(--text);font-size:1rem;margin-top:1rem;text-shadow:0 1px 4px rgba(0,0,0,.9)">Full Loot PVP · 3x Rates · 2x NPC Damage · Enhanced Combat · Thralls Balanced for War</p>
-      <a href="steam://connect/76.31.186.50:7777" style="display:inline-block;margin-top:2rem;padding:18px 50px;font-family:var(--font-heading);font-size:1.3rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#c0392b 0%,#8b0000 100%);border:2px solid #d4af37;border-radius:8px;text-decoration:none;box-shadow:0 0 30px rgba(192,57,43,.4),0 0 60px rgba(212,175,55,.15),inset 0 1px 0 rgba(255,255,255,.1);transition:all .3s;cursor:pointer" onmouseover="this.style.transform='translateY(-3px) scale(1.02)';this.style.boxShadow='0 0 40px rgba(192,57,43,.6),0 0 80px rgba(212,175,55,.3)'" onmouseout="this.style.transform='';this.style.boxShadow='0 0 30px rgba(192,57,43,.4),0 0 60px rgba(212,175,55,.15),inset 0 1px 0 rgba(255,255,255,.1)'">&#9876; Join Server</a>
-      <p style="color:var(--text-dim);font-size:.8rem;margin-top:.75rem">Direct Connect: <code style="color:var(--yellow);background:rgba(0,0,0,.5);padding:2px 8px;border-radius:4px">76.31.186.50:7777</code></p>
-      <a href="https://discord.gg/grudge-studio" target="_blank" style="display:inline-block;margin-top:1rem;padding:12px 32px;font-family:var(--font-body);font-size:1rem;font-weight:600;color:#fff;background:#5865F2;border:none;border-radius:8px;text-decoration:none;box-shadow:0 0 20px rgba(88,101,242,.3);transition:all .3s;cursor:pointer" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 0 30px rgba(88,101,242,.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 0 20px rgba(88,101,242,.3)'">💬 Join Discord</a>
-      <div style="margin-top:2rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-        <div style="background:rgba(0,0,0,.6);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)"><div style="font-size:1.4rem;font-weight:900;color:var(--gold)">3x</div><div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">XP & Rates</div></div>
-        <div style="background:rgba(0,0,0,.6);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)"><div style="font-size:1.4rem;font-weight:900;color:var(--gold)">2x</div><div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">NPC Dmg</div></div>
-        <div style="background:rgba(0,0,0,.6);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)"><div style="font-size:1.4rem;font-weight:900;color:var(--gold)">2x</div><div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Thrall War</div></div>
-        <div style="background:rgba(0,0,0,.6);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)"><div style="font-size:1.4rem;font-weight:900;color:var(--gold)">2.5x</div><div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Harvest</div></div>
-        <div style="background:rgba(0,0,0,.6);border:1px solid rgba(192,57,43,.5);border-radius:8px;padding:10px 20px;backdrop-filter:blur(4px)"><div style="font-size:1.4rem;font-weight:900;color:var(--red)">💀</div><div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Full Loot</div></div>
+      <p style="color:var(--text);font-size:1.05rem;text-shadow:0 2px 8px rgba(0,0,0,.9);font-weight:500">Full Loot PVP • 2x Health • 1.4x Damage • 60% DR • 3x Rates</p>
+
+      <!-- One-Click Join Button -->
+      <a href="steam://connect/76.31.186.50:7777" style="display:inline-block;margin-top:1.5rem;padding:18px 50px;font-family:var(--font-heading);font-size:1.3rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#c0392b 0%,#8b0000 100%);border:2px solid #d4af37;border-radius:8px;text-decoration:none;box-shadow:0 0 30px rgba(192,57,43,.4),0 0 60px rgba(212,175,55,.15),inset 0 1px 0 rgba(255,255,255,.1);transition:all .3s;cursor:pointer" onmouseover="this.style.transform='translateY(-3px) scale(1.02)';this.style.boxShadow='0 0 40px rgba(192,57,43,.6),0 0 80px rgba(212,175,55,.3)'" onmouseout="this.style.transform='';this.style.boxShadow='0 0 30px rgba(192,57,43,.4),0 0 60px rgba(212,175,55,.15),inset 0 1px 0 rgba(255,255,255,.1)'">&#9876; Join Server</a>
+      <p style="color:var(--text-dim);font-size:.8rem;margin-top:.75rem">or Direct Connect: <code style="color:var(--yellow);background:rgba(0,0,0,.5);padding:2px 8px;border-radius:4px">76.31.186.50:7777</code></p>
+
+      <div style="margin-top:1.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <div style="background:rgba(0,0,0,.7);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">1.4x</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Damage</div>
+        </div>
+        <div style="background:rgba(0,0,0,.7);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">2x</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Health</div>
+        </div>
+        <div style="background:rgba(0,0,0,.7);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">60%</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">DR</div>
+        </div>
+        <div style="background:rgba(0,0,0,.7);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">3x</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Rates</div>
+        </div>
+        <div style="background:rgba(0,0,0,.7);border:1px solid rgba(192,57,43,.5);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--red)">💀</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Full Loot</div>
+        </div>
       </div>
     </div>
-    <div style="position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:1;animation:bounce 2s infinite"><div style="color:var(--gold-dim);font-size:1.5rem">▼</div></div>
+    <!-- Scroll indicator -->
+    <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);z-index:1;animation:bounce 2s infinite">
+      <div style="color:var(--gold-dim);font-size:1.5rem">▼</div>
+    </div>
   </div>
+
+  <!-- Content Section -->
   <div style="max-width:960px;margin:0 auto;padding:3rem 2rem;position:relative">
+    <!-- Gold divider -->
     <div style="width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-bottom:3rem"></div>
+
+    <!-- Balance Cards -->
     <h2 style="font-family:var(--font-heading);text-align:center;color:var(--gold);font-size:1.6rem;letter-spacing:.15em;margin-bottom:2rem">⚔ Server Balance</h2>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:3rem">
-      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold))"></div><h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">⚔ Combat</h4><p>Player Damage: <strong style="color:var(--yellow)">1x</strong></p><p>Damage Taken: <strong style="color:var(--yellow)">0.8x</strong></p><p>NPC Damage: <strong style="color:var(--yellow)">2x</strong></p><p>Building Damage: <strong style="color:var(--yellow)">2.5x</strong></p></div>
-      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--gold))"></div><h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">🐾 Pets & Thralls</h4><p>Thrall → Players: <strong style="color:var(--yellow)">2x</strong></p><p>Thrall → NPCs: <strong style="color:var(--yellow)">2x</strong></p><p>Taming Speed: <strong style="color:var(--yellow)">2x faster</strong></p><p>Max Followers: <strong style="color:var(--yellow)">24 per player</strong></p></div>
-      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold))"></div><h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">📦 Rates</h4><p>Harvest: <strong style="color:var(--yellow)">2.5x</strong></p><p>XP: <strong style="color:var(--yellow)">3x all</strong></p><p>Craft Cost: <strong style="color:var(--yellow)">0.5x</strong></p><p>Resource Respawn: <strong style="color:var(--yellow)">2x</strong></p></div>
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold))"></div>
+        <h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">⚔ Combat</h4>
+        <p>Weapon Damage: <strong style="color:var(--yellow)">1.4x</strong></p>
+        <p>Damage Taken: <strong style="color:var(--yellow)">0.4x</strong></p>
+        <p>Player Health: <strong style="color:var(--yellow)">2x</strong></p>
+        <p>NPC Health: <strong style="color:var(--yellow)">2x</strong></p>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--gold))"></div>
+        <h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">🐾 Pets & Thralls</h4>
+        <p>Pet Damage: <strong style="color:var(--yellow)">2x</strong></p>
+        <p>Pet Health: <strong style="color:var(--yellow)">3x</strong></p>
+        <p>Taming Speed: <strong style="color:var(--yellow)">3x faster</strong></p>
+        <p>Minion Damage: <strong style="color:var(--yellow)">1.5x</strong></p>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--gold))"></div>
+        <h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">📦 Rates</h4>
+        <p>Harvest: <strong style="color:var(--yellow)">3x</strong></p>
+        <p>XP: <strong style="color:var(--yellow)">3x all</strong></p>
+        <p>Craft Cost: <strong style="color:var(--yellow)">0.5x</strong></p>
+        <p>Craft Speed: <strong style="color:var(--yellow)">2x</strong></p>
+      </div>
     </div>
+
+    <!-- Gold divider -->
     <div style="width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border-gold),transparent);margin-bottom:3rem"></div>
+
+    <!-- Rules & Warps side by side -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:3rem">
-      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),#8b0000)"></div><h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">📜 Server Rules</h3><ol style="line-height:2.2;padding-left:1.2rem;color:var(--text)"><li>No exploits, glitches, or undermesh</li><li><strong style="color:var(--red)">PVP is always on</strong> — fight or die</li><li><strong style="color:var(--red)">Full loot</strong> — gear at your own risk</li><li>No foundation spam or blocking resources</li><li>Max clan size: <strong>10</strong></li><li>Outlast your enemy — adapt or perish</li><li>Respect other players in chat</li><li><strong>Admin decisions are final</strong></li></ol></div>
-      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold))"></div><h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">🌀 Warp Points</h3><ul style="list-style:none;line-height:2.2"><li>🌀 <strong>noob-river</strong> — Starting area</li><li>🌀 <strong>sepermeru</strong> — City of Relic Hunters</li><li>🌀 <strong>mounds</strong> — Mounds of the Dead</li><li>🌀 <strong>volcano</strong> — Volcano region</li><li>🌀 <strong>jungle</strong> — Eastern jungle</li><li>🌀 <strong>unnamed-city</strong> — Unnamed City</li><li>🔮 <strong>sorcery-cave</strong> — Unlock sorcery here!</li></ul><p style="margin-top:.75rem;color:var(--text-dim);font-size:.85rem">Type <code style="color:var(--yellow)">/warps</code> in Discord or <code style="color:var(--yellow)">!warps</code> in-game</p></div>
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),#8b0000)"></div>
+        <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">📜 Server Rules</h3>
+        <ol style="line-height:2.2;padding-left:1.2rem;color:var(--text)">
+          <li>No exploits, glitches, or undermesh</li>
+          <li><strong style="color:var(--red)">PVP is always on</strong> — fight or die</li>
+          <li><strong style="color:var(--red)">Full loot</strong> — gear at your own risk</li>
+          <li>No foundation spam or blocking resources</li>
+          <li>Max clan size: <strong>10</strong></li>
+          <li>Outlast your enemy — adapt or perish</li>
+          <li>Respect other players in chat</li>
+          <li><strong>Admin decisions are final</strong></li>
+        </ol>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--gold))"></div>
+        <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">🌀 Warp Points</h3>
+        <ul style="list-style:none;line-height:2.2">
+          <li>🌀 <strong>noob-river</strong> — Starting area</li>
+          <li>🌀 <strong>sepermeru</strong> — City of Relic Hunters</li>
+          <li>🌀 <strong>mounds</strong> — Mounds of the Dead</li>
+          <li>🌀 <strong>volcano</strong> — Volcano region</li>
+          <li>🌀 <strong>jungle</strong> — Eastern jungle</li>
+          <li>🌀 <strong>unnamed-city</strong> — Unnamed City</li>
+          <li>🔮 <strong>sorcery-cave</strong> — Unlock sorcery here!</li>
+        </ul>
+        <p style="margin-top:.75rem;color:var(--text-dim);font-size:.85rem">Type <code style="color:var(--yellow)">/warps</code> in Discord or <code style="color:var(--yellow)">!warps</code> in-game</p>
+      </div>
     </div>
-    <div style="background:var(--surface);border-radius:10px;padding:2rem;border:1px solid var(--border-gold);margin-bottom:3rem;position:relative;overflow:hidden"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--accent-dark),var(--gold))"></div><h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">🚀 Getting Started</h3><ol style="line-height:2.4;padding-left:1.2rem"><li><strong>Join:</strong> Click the button above or Direct Connect to <code style="color:var(--yellow)">76.31.186.50:7777</code></li><li><strong>Get Sorcery:</strong> Head to Shaleback Hollow cave or <code style="color:var(--yellow)">/warp sorcery-cave</code></li><li><strong>Set a Home:</strong> Type <code style="color:var(--yellow)">!sethome base X Y Z</code> in-game chat or <code style="color:var(--yellow)">/sethome</code> in Discord</li><li><strong>Fast Travel:</strong> Map Rooms at every obelisk! Type <code style="color:var(--yellow)">!warps</code> in-game</li><li><strong>Get a Pet:</strong> Pets do 2x damage with 3x health — they're absolute tanks</li><li><strong>Fight Smart:</strong> Everyone has 2x health + 60% DR. Bring food, stack DoTs, outlast your enemy</li></ol></div>
+
+    <!-- Getting Started -->
+    <div style="background:var(--surface);border-radius:10px;padding:2rem;border:1px solid var(--border-gold);margin-bottom:3rem;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--accent-dark),var(--gold))"></div>
+      <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">🚀 Getting Started</h3>
+      <ol style="line-height:2.4;padding-left:1.2rem">
+        <li><strong>Join:</strong> Click the button above or Direct Connect to <code style="color:var(--yellow)">76.31.186.50:7777</code></li>
+        <li><strong>Get Sorcery:</strong> Head to Shaleback Hollow cave or <code style="color:var(--yellow)">/warp sorcery-cave</code></li>
+        <li><strong>Set a Home:</strong> Type <code style="color:var(--yellow)">!sethome base X Y Z</code> in-game chat or <code style="color:var(--yellow)">/sethome</code> in Discord</li>
+        <li><strong>Fast Travel:</strong> Map Rooms at every obelisk! Type <code style="color:var(--yellow)">!warps</code> in-game</li>
+        <li><strong>Get a Pet:</strong> Pets do 2x damage with 3x health — they're absolute tanks</li>
+        <li><strong>Fight Smart:</strong> Everyone has 2x health + 60% DR. Bring food, stack DoTs, outlast your enemy</li>
+      </ol>
+    </div>
+
+    <!-- MOTD -->
     <div id="landing-motd" style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);margin-bottom:2rem;text-align:center"></div>
+
+    <!-- Bottom Join + Admin -->
     <div style="text-align:center;padding:2rem 0">
       <a href="steam://connect/76.31.186.50:7777" style="display:inline-block;padding:14px 40px;font-family:var(--font-heading);font-size:1.1rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#c0392b,#8b0000);border:2px solid var(--gold);border-radius:8px;text-decoration:none;box-shadow:0 0 20px rgba(192,57,43,.3);transition:all .3s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">&#9876; Join Server Now</a>
-      <div style="margin-top:1.5rem"><button onclick="document.getElementById('landing-page').style.display='none';document.getElementById('login-screen').style.display='flex'" class="secondary" style="padding:10px 24px;font-size:.85rem">🔒 Admin Login</button></div>
+      <div style="margin-top:1.5rem">
+        <button onclick="document.getElementById('landing-page').style.display='none';document.getElementById('login-screen').style.display='flex'" class="secondary" style="padding:10px 24px;font-size:.85rem">🔒 Admin Login</button>
+      </div>
       <div style="margin-top:2rem;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border-gold),transparent)"></div>
-      <a href="https://discord.gg/grudge-studio" target="_blank" style="display:inline-block;margin-top:1rem;padding:10px 28px;font-size:.9rem;font-weight:600;color:#fff;background:#5865F2;border-radius:8px;text-decoration:none;transition:all .3s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">💬 Join Our Discord</a>
-      <p style="color:var(--gold-dim);margin-top:1.5rem;font-size:0.8rem;font-family:var(--font-heading);letter-spacing:.15em">Created by Racalvin The Pirate King — Grudge Studio</p>
+      <p style="color:var(--gold-dim);margin-top:1rem;font-size:0.8rem;font-family:var(--font-heading);letter-spacing:.15em">Created by Racalvin The Pirate King — Grudge Studio</p>
       <p style="color:var(--text-dim);margin-top:.25rem;font-size:.7rem">conan.grudge-studio.com</p>
     </div>
   </div>
 </div>
-<style>@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}#landing-page .field-row{background:transparent!important}#landing-page p{line-height:1.8}#landing-page ol li,#landing-page ul li{font-size:.95rem}</style>
-<div id="login-screen" style="display:none"><h2>⚔ GRUDGE EXILES</h2><p style="color:var(--text-dim)">Server Administration</p><input type="password" id="token-input" placeholder="Admin Token" onkeydown="if(event.key==='Enter')doLogin()"><button onclick="doLogin()">Enter</button><button class="secondary" onclick="document.getElementById('login-screen').style.display='none';document.getElementById('landing-page').style.display='block'" style="margin-top:0.5rem;width:300px">← Back</button></div>
-<div class="app" id="app"><header><h1>⚔ GRUDGE EXILES <span>Admin Panel</span></h1><div id="status-badge" class="status-badge offline"><div class="status-dot"></div><span>Checking...</span></div></header><main><div class="controls"><button class="green" id="btn-start" onclick="serverAction('start')">▶ Start</button><button id="btn-stop" onclick="serverAction('stop')">■ Stop</button><button class="secondary" id="btn-restart" onclick="serverAction('restart')">⟳ Restart</button><button class="secondary" onclick="saveSettings()">💾 Save Settings</button><div class="info">Direct Connect: <code id="connect-str">loading...</code></div></div><div class="proc-info" id="proc-info" style="display:none"><div class="proc-stat"><div class="val" id="pi-mem">—</div><div class="lbl">Memory (MB)</div></div><div class="proc-stat"><div class="val" id="pi-cpu">—</div><div class="lbl">CPU Time</div></div><div class="proc-stat"><div class="val" id="pi-pid">—</div><div class="lbl">PID</div></div><div class="proc-stat"><div class="val" id="pi-up">—</div><div class="lbl">Uptime</div></div></div><div class="tabs" id="tabs"></div><div id="panels"></div><div class="settings-panel" id="panel-rcon"><h3 style="color:var(--accent);margin-bottom:1rem">RCON Console</h3><div class="console-box" id="rcon-output">Type a command below and press Enter...\n</div><div class="rcon-input"><input type="text" id="rcon-cmd" placeholder="e.g. listplayers" onkeydown="if(event.key==='Enter')sendRcon()"><button onclick="sendRcon()">Send</button></div></div><div class="settings-panel" id="panel-shop"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><h3 style="color:var(--accent)">🛒 Shop Packages</h3><button class="green" onclick="showNewPackageForm()">+ New Package</button></div><div id="shop-new-form" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem"><h4 style="color:var(--yellow);margin-bottom:0.5rem">New Package</h4><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px"><input type="text" id="shop-new-id" placeholder="ID (e.g. raider-pack)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px"><input type="text" id="shop-new-name" placeholder="Display Name" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px"><input type="text" id="shop-new-emoji" placeholder="Emoji" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px"></div><div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px"><input type="text" id="shop-new-desc" placeholder="Description" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px"><select id="shop-new-cat" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px"><option value="starter">Starter</option><option value="combat">Combat</option><option value="building">Building</option><option value="alchemy">Alchemy</option><option value="survival">Survival</option><option value="premium">Premium</option></select><input type="number" id="shop-new-price" placeholder="Price" value="0" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px"></div><div id="shop-new-items" style="margin-bottom:8px"></div><button class="secondary" onclick="addItemRow('shop-new-items')" style="margin-bottom:8px">+ Add Item</button><div style="display:flex;gap:8px"><button class="green" onclick="createPackage()">Create</button><button class="secondary" onclick="document.getElementById('shop-new-form').style.display='none'">Cancel</button></div></div><div id="shop-list">Loading...</div></div><div class="settings-panel" id="panel-logs"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><h3 style="color:var(--accent)">Server Logs</h3><button class="secondary" onclick="loadLogs()">⟳ Refresh</button></div><div class="console-box" id="log-output">Loading...</div></div></main></div>
+
+<style>
+  @keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+  #landing-page .field-row { background: transparent !important; }
+  #landing-page p { line-height: 1.8; }
+  #landing-page ol li, #landing-page ul li { font-size: 0.95rem; }
+</style>
+
+<!-- Login (hidden by default) -->
+<div id="login-screen" style="display:none">
+  <h2>⚔ GRUDGE EXILES</h2>
+  <p style="color:var(--text-dim)">Server Administration</p>
+  <input type="password" id="token-input" placeholder="Admin Token" onkeydown="if(event.key==='Enter')doLogin()">
+  <button onclick="doLogin()">Enter</button>
+  <button class="secondary" onclick="document.getElementById('login-screen').style.display='none';document.getElementById('landing-page').style.display='block'" style="margin-top:0.5rem;width:300px">← Back</button>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+  <header>
+    <h1>⚔ GRUDGE EXILES <span>Admin Panel</span></h1>
+    <div id="status-badge" class="status-badge offline"><div class="status-dot"></div><span>Checking...</span></div>
+  </header>
+
+  <main>
+    <!-- Server controls -->
+    <div class="controls">
+      <button class="green" id="btn-start" onclick="serverAction('start')">▶ Start</button>
+      <button id="btn-stop" onclick="serverAction('stop')">■ Stop</button>
+      <button class="secondary" id="btn-restart" onclick="serverAction('restart')">⟳ Restart</button>
+      <button class="secondary" onclick="saveSettings()">💾 Save Settings</button>
+      <div class="info">
+        Direct Connect: <code id="connect-str">loading...</code>
+      </div>
+    </div>
+
+    <!-- Process info -->
+    <div class="proc-info" id="proc-info" style="display:none">
+      <div class="proc-stat"><div class="val" id="pi-mem">—</div><div class="lbl">Memory (MB)</div></div>
+      <div class="proc-stat"><div class="val" id="pi-cpu">—</div><div class="lbl">CPU Time</div></div>
+      <div class="proc-stat"><div class="val" id="pi-pid">—</div><div class="lbl">PID</div></div>
+      <div class="proc-stat"><div class="val" id="pi-up">—</div><div class="lbl">Uptime</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="tabs"></div>
+
+    <!-- Settings panels -->
+    <div id="panels"></div>
+
+    <!-- RCON tab content -->
+    <div class="settings-panel" id="panel-rcon">
+      <h3 style="color:var(--accent); margin-bottom:1rem">RCON Console</h3>
+      <div class="console-box" id="rcon-output">Type a command below and press Enter...\n</div>
+      <div class="rcon-input">
+        <input type="text" id="rcon-cmd" placeholder="e.g. listplayers" onkeydown="if(event.key==='Enter')sendRcon()">
+        <button onclick="sendRcon()">Send</button>
+      </div>
+    </div>
+
+    <!-- Shop tab content -->
+    <div class="settings-panel" id="panel-shop">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <h3 style="color:var(--accent)">🛒 Shop Packages</h3>
+        <button class="green" onclick="showNewPackageForm()">+ New Package</button>
+      </div>
+      <div id="shop-new-form" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem">
+        <h4 style="color:var(--yellow);margin-bottom:0.5rem">New Package</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <input type="text" id="shop-new-id" placeholder="ID (e.g. raider-pack)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+          <input type="text" id="shop-new-name" placeholder="Display Name" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+          <input type="text" id="shop-new-emoji" placeholder="Emoji (⚔)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <input type="text" id="shop-new-desc" placeholder="Description" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+          <select id="shop-new-cat" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+            <option value="starter">Starter</option><option value="combat">Combat</option><option value="building">Building</option>
+            <option value="alchemy">Alchemy</option><option value="survival">Survival</option><option value="premium">Premium</option>
+          </select>
+          <input type="number" id="shop-new-price" placeholder="Price (0=free)" value="0" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px">
+        </div>
+        <div id="shop-new-items" style="margin-bottom:8px"></div>
+        <button class="secondary" onclick="addItemRow('shop-new-items')" style="margin-bottom:8px">+ Add Item</button>
+        <div style="display:flex;gap:8px">
+          <button class="green" onclick="createPackage()">Create</button>
+          <button class="secondary" onclick="document.getElementById('shop-new-form').style.display='none'">Cancel</button>
+        </div>
+      </div>
+      <div id="shop-list">Loading...</div>
+    </div>
+
+    <!-- Logs tab content -->
+    <div class="settings-panel" id="panel-logs">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+        <h3 style="color:var(--accent)">Server Logs</h3>
+        <button class="secondary" onclick="loadLogs()">⟳ Refresh</button>
+      </div>
+      <div class="console-box" id="log-output">Loading...</div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
 <div class="toast" id="toast"></div>
+
 <script>
-let TOKEN='',schema={},currentSettings={},activeTab='';
-(async function(){try{const i=await fetch('/api/serverinfo').then(r=>r.json());document.getElementById('landing-status').innerHTML=i.running?'<span style="color:#27ae60;font-weight:bold">🟢 SERVER ONLINE</span>':'<span style="color:#c0392b;font-weight:bold">🔴 SERVER OFFLINE</span>';document.getElementById('landing-motd').innerHTML='<h3 style="color:var(--accent);margin-bottom:0.5rem">📜 Message of the Day</h3><p>'+(i.motd||'')+'</p>'}catch{}})();
-function doLogin(){TOKEN=document.getElementById('token-input').value;fetch('/api/status',{headers:{'x-admin-token':TOKEN}}).then(r=>{if(!r.ok)throw new Error();return r.json()}).then(()=>{document.getElementById('login-screen').style.display='none';document.getElementById('app').classList.add('active');init()}).catch(()=>toast('Invalid token','error'))}
-async function init(){await loadSchema();await loadSettings();await refreshStatus();setInterval(refreshStatus,10000)}
-function api(p,o={}){o.headers={...o.headers,'x-admin-token':TOKEN,'Content-Type':'application/json'};return fetch(p,o).then(r=>r.json())}
-async function refreshStatus(){try{const d=await api('/api/status');const b=document.getElementById('status-badge');b.className='status-badge '+(d.running?'online':'offline');b.querySelector('span').textContent=d.running?'ONLINE':'OFFLINE';document.getElementById('connect-str').textContent=d.publicIp+':'+d.gamePort;document.getElementById('btn-start').disabled=d.running;document.getElementById('btn-stop').disabled=!d.running;const pi=document.getElementById('proc-info');if(d.running&&d.process){pi.style.display='flex';const p=d.process;document.getElementById('pi-mem').textContent=p.MemMB||'—';document.getElementById('pi-cpu').textContent=p.CPU?p.CPU.toFixed(1)+'s':'—';document.getElementById('pi-pid').textContent=p.Id||'—';if(p.StartTime){const s=new Date(p.StartTime),m=Math.round((Date.now()-s)/60000);document.getElementById('pi-up').textContent=m<60?m+'m':Math.round(m/60)+'h '+(m%60)+'m'}}else pi.style.display='none'}catch{}}
-async function serverAction(a){const b=document.getElementById('btn-'+a);if(b)b.disabled=true;try{const d=await api('/api/server/'+a,{method:'POST'});toast(d.message,d.ok?'success':'error');setTimeout(refreshStatus,3000)}catch(e){toast('Action failed: '+e.message,'error')}}
-async function loadSchema(){schema=await api('/api/schema');buildTabs()}
-async function loadSettings(){const d=await api('/api/settings');currentSettings=d.settings||{};populateFields()}
-function buildTabs(){const t=document.getElementById('tabs'),p=document.getElementById('panels');t.innerHTML='';const c=Object.keys(schema),all=[...c,'shop_manager','rcon_console','server_logs'];all.forEach((k,i)=>{const l=k==='shop_manager'?'🛒 Shop':k==='rcon_console'?'🖥 RCON':k==='server_logs'?'📜 Logs':schema[k].label;const tab=document.createElement('div');tab.className='tab'+(i===0?' active':'');tab.textContent=l;tab.onclick=()=>switchTab(k);t.appendChild(tab)});c.forEach(ck=>{const cat=schema[ck],panel=document.createElement('div');panel.className='settings-panel';panel.id='panel-'+ck;let h='<div class="settings-group"><h3>'+cat.label+'</h3>';Object.entries(cat.fields).forEach(([fk,f])=>{h+='<div class="field-row"><div class="field-label">'+f.label+'</div><div class="field-input">';if(f.type==='bool')h+='<label class="toggle"><input type="checkbox" data-key="'+fk+'" onchange="markDirty()"><span class="toggle-slider"></span></label>';else if(f.type==='float')h+='<div class="range-wrap"><input type="range" data-key="'+fk+'" min="'+f.min+'" max="'+f.max+'" step="'+f.step+'" onchange="markDirty();updateRangeVal(this)" oninput="updateRangeVal(this)"><span class="range-val" id="rv-'+fk+'">'+f.default+'</span></div>';else if(f.type==='int')h+='<input type="number" data-key="'+fk+'" min="'+(f.min||0)+'" max="'+(f.max||99999)+'" onchange="markDirty()">';else h+='<input type="text" data-key="'+fk+'" onchange="markDirty()">';h+='</div></div>'});h+='</div>';panel.innerHTML=h;p.appendChild(panel)});switchTab(c[0])}
-function switchTab(k){activeTab=k;document.querySelectorAll('.tab').forEach((t,i)=>{const tabs=[...Object.keys(schema),'shop_manager','rcon_console','server_logs'];t.classList.toggle('active',tabs[i]===k)});document.querySelectorAll('.settings-panel').forEach(p=>p.classList.remove('active'));if(k==='shop_manager'){document.getElementById('panel-shop').classList.add('active');loadShopAdmin()}else if(k==='rcon_console')document.getElementById('panel-rcon').classList.add('active');else if(k==='server_logs'){document.getElementById('panel-logs').classList.add('active');loadLogs()}else{const p=document.getElementById('panel-'+k);if(p)p.classList.add('active')}}
-function populateFields(){document.querySelectorAll('[data-key]').forEach(el=>{const k=el.dataset.key,v=currentSettings[k];if(v===undefined)return;if(el.type==='checkbox')el.checked=v==='True'||v==='true'||v===true;else if(el.type==='range'){el.value=parseFloat(v);const rv=document.getElementById('rv-'+k);if(rv)rv.textContent=parseFloat(v)}else el.value=v})}
-function updateRangeVal(el){const rv=document.getElementById('rv-'+el.dataset.key);if(rv)rv.textContent=parseFloat(el.value).toFixed(2)}
-function markDirty(){}
-async function saveSettings(){const u={};document.querySelectorAll('[data-key]').forEach(el=>{const k=el.dataset.key;if(el.type==='checkbox')u[k]=el.checked?'True':'False';else u[k]=el.value});const d=await api('/api/settings',{method:'PUT',body:JSON.stringify(u)});toast(d.message,d.ok?'success':'error')}
-async function sendRcon(){const i=document.getElementById('rcon-cmd'),c=i.value.trim();if(!c)return;const o=document.getElementById('rcon-output');o.textContent+='> '+c+'\n';i.value='';try{const d=await api('/api/rcon',{method:'POST',body:JSON.stringify({command:c})});o.textContent+=(d.response||'(no response)')+'\n'}catch(e){o.textContent+='Error: '+e.message+'\n'}o.scrollTop=o.scrollHeight}
-async function loadLogs(){try{const d=await api('/api/logs?lines=200');document.getElementById('log-output').textContent=d.logs||'No logs available.';const el=document.getElementById('log-output');el.scrollTop=el.scrollHeight}catch{}}
-async function loadShopAdmin(){try{const s=await api('/api/shop');const el=document.getElementById('shop-list');if(!s.length){el.innerHTML='<p style="color:var(--text-dim)">No packages yet.</p>';return}el.innerHTML=s.map(p=>'<div class="field-row" style="padding:12px 16px;margin-bottom:6px;background:var(--surface);border-radius:6px;border:1px solid var(--border)"><div style="flex:1"><strong>'+(p.emoji||'📦')+' '+p.name+'</strong> <code style="color:var(--text-dim);font-size:0.8rem">'+p.id+'</code>'+(!p.enabled?'<span style="color:var(--red);font-size:0.75rem"> (disabled)</span>':'')+'<br><span style="color:var(--text-dim);font-size:0.85rem">'+(p.description||'')+' · '+p.items.length+' items'+(p.price?' · '+p.price+' coins':'')+'</span></div><div style="display:flex;gap:6px"><button class="secondary" onclick="togglePackage(\''+p.id+'\','+!p.enabled+')" style="padding:6px 12px;font-size:0.8rem">'+(p.enabled?'🚫 Disable':'✅ Enable')+'</button><button class="secondary" onclick="grantPackage(\''+p.id+'\')" style="padding:6px 12px;font-size:0.8rem">🎁 Grant</button><button class="secondary" onclick="deletePackage(\''+p.id+'\')" style="padding:6px 12px;font-size:0.8rem;color:var(--red)">🗑</button></div></div>').join('')}catch{document.getElementById('shop-list').innerHTML='Failed to load shop.'}}
-function showNewPackageForm(){document.getElementById('shop-new-form').style.display='block';document.getElementById('shop-new-items').innerHTML='';addItemRow('shop-new-items')}
-function addItemRow(c){const d=document.getElementById(c),r=document.createElement('div');r.style.cssText='display:grid;grid-template-columns:1fr 2fr 80px 30px;gap:6px;margin-bottom:4px';r.innerHTML='<input type="number" placeholder="Item ID" class="shop-item-id" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px"><input type="text" placeholder="Name" class="shop-item-name" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px"><input type="number" placeholder="Qty" value="1" class="shop-item-qty" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px"><button onclick="this.parentElement.remove()" style="padding:4px;font-size:0.8rem" class="secondary">✕</button>';d.appendChild(r)}
-async function createPackage(){const items=[];document.querySelectorAll('#shop-new-items > div').forEach(r=>{const id=parseInt(r.querySelector('.shop-item-id').value),n=r.querySelector('.shop-item-name').value,q=parseInt(r.querySelector('.shop-item-qty').value)||1;if(id&&n)items.push({id,name:n,qty:q})});const pkg={id:document.getElementById('shop-new-id').value.trim().toLowerCase().replace(/\s+/g,'-'),name:document.getElementById('shop-new-name').value.trim(),emoji:document.getElementById('shop-new-emoji').value.trim()||'📦',description:document.getElementById('shop-new-desc').value.trim(),category:document.getElementById('shop-new-cat').value,price:parseInt(document.getElementById('shop-new-price').value)||0,items};if(!pkg.id||!pkg.name)return toast('ID and Name required','error');const res=await api('/api/shop',{method:'POST',body:JSON.stringify(pkg)});toast(res.message,res.ok?'success':'error');if(res.ok){document.getElementById('shop-new-form').style.display='none';loadShopAdmin()}}
-async function togglePackage(id,e){const r=await api('/api/shop/'+id,{method:'PUT',body:JSON.stringify({enabled:e})});toast(r.message,r.ok?'success':'error');if(r.ok)loadShopAdmin()}
-async function grantPackage(id){const r=await api('/api/shop/'+id+'/grant',{method:'POST'});if(r.ok){const s=r.results.map(x=>(x.ok?'✅':'❌')+' '+x.name+' x'+x.qty).join('\n');toast('Granted '+r.package+'\n'+s,'success')}else toast(r.message,'error')}
-async function deletePackage(id){if(!confirm('Delete "'+id+'"?'))return;const r=await api('/api/shop/'+id,{method:'DELETE'});toast(r.message,r.ok?'success':'error');if(r.ok)loadShopAdmin()}
-function toast(m,t='success'){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+t+' show';setTimeout(()=>el.classList.remove('show'),3000)}
+let TOKEN = '';
+let schema = {};
+let currentSettings = {};
+let activeTab = '';
+
+// ── Landing page live data ──
+(async function loadLanding() {
+  try {
+    const info = await fetch('/api/serverinfo').then(r=>r.json());
+    document.getElementById('landing-status').innerHTML = info.running
+      ? '<span style="color:#27ae60;font-weight:bold">🟢 SERVER ONLINE</span>'
+      : '<span style="color:#c0392b;font-weight:bold">🔴 SERVER OFFLINE</span>';
+    document.getElementById('landing-motd').innerHTML = '<h3 style="color:var(--accent);margin-bottom:0.5rem">📜 Message of the Day</h3><p>' + (info.motd || '') + '</p>';
+  } catch {}
+})();
+
+// ── Auth ──
+function doLogin() {
+  TOKEN = document.getElementById('token-input').value;
+  fetch('/api/status', { headers: { 'x-admin-token': TOKEN } })
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(() => {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').classList.add('active');
+      init();
+    })
+    .catch(() => toast('Invalid token', 'error'));
+}
+
+// ── Init ──
+async function init() {
+  await loadSchema();
+  await loadSettings();
+  await refreshStatus();
+  setInterval(refreshStatus, 10000);
+}
+
+// ── API calls ──
+function api(path, opts = {}) {
+  opts.headers = { ...opts.headers, 'x-admin-token': TOKEN, 'Content-Type': 'application/json' };
+  return fetch(path, opts).then(r => r.json());
+}
+
+// ── Status ──
+async function refreshStatus() {
+  try {
+    const data = await api('/api/status');
+    const badge = document.getElementById('status-badge');
+    badge.className = 'status-badge ' + (data.running ? 'online' : 'offline');
+    badge.querySelector('span').textContent = data.running ? 'ONLINE' : 'OFFLINE';
+    document.getElementById('connect-str').textContent = data.publicIp + ':' + data.gamePort;
+    document.getElementById('btn-start').disabled = data.running;
+    document.getElementById('btn-stop').disabled = !data.running;
+
+    const pi = document.getElementById('proc-info');
+    if (data.running && data.process) {
+      pi.style.display = 'flex';
+      const p = data.process;
+      document.getElementById('pi-mem').textContent = p.MemMB || '—';
+      document.getElementById('pi-cpu').textContent = p.CPU ? p.CPU.toFixed(1) + 's' : '—';
+      document.getElementById('pi-pid').textContent = p.Id || '—';
+      if (p.StartTime) {
+        const start = new Date(p.StartTime);
+        const mins = Math.round((Date.now() - start) / 60000);
+        document.getElementById('pi-up').textContent = mins < 60 ? mins + 'm' : Math.round(mins/60) + 'h ' + (mins%60) + 'm';
+      }
+    } else {
+      pi.style.display = 'none';
+    }
+  } catch {}
+}
+
+// ── Server actions ──
+async function serverAction(action) {
+  const btn = document.getElementById('btn-' + action);
+  if (btn) btn.disabled = true;
+  try {
+    const data = await api('/api/server/' + action, { method: 'POST' });
+    toast(data.message, data.ok ? 'success' : 'error');
+    setTimeout(refreshStatus, 3000);
+  } catch (e) {
+    toast('Action failed: ' + e.message, 'error');
+  }
+}
+
+// ── Schema & Settings ──
+async function loadSchema() {
+  schema = await api('/api/schema');
+  buildTabs();
+}
+
+async function loadSettings() {
+  const data = await api('/api/settings');
+  currentSettings = data.settings || {};
+  populateFields();
+}
+
+function buildTabs() {
+  const tabsEl = document.getElementById('tabs');
+  const panelsEl = document.getElementById('panels');
+  tabsEl.innerHTML = '';
+
+  const categories = Object.keys(schema);
+  // Add extra tabs
+  const allTabs = [...categories, 'shop_manager', 'rcon_console', 'server_logs'];
+
+  allTabs.forEach((key, i) => {
+  const label = key === 'shop_manager' ? '🛒 Shop' : key === 'rcon_console' ? '🖥 RCON' : key === 'server_logs' ? '📜 Logs' : schema[key].label;
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (i === 0 ? ' active' : '');
+    tab.textContent = label;
+    tab.onclick = () => switchTab(key);
+    tabsEl.appendChild(tab);
+  });
+
+  // Build settings panels
+  categories.forEach(catKey => {
+    const cat = schema[catKey];
+    const panel = document.createElement('div');
+    panel.className = 'settings-panel';
+    panel.id = 'panel-' + catKey;
+    let html = `<div class="settings-group"><h3>${cat.label}</h3>`;
+    Object.entries(cat.fields).forEach(([fieldKey, field]) => {
+      html += `<div class="field-row"><div class="field-label">${field.label}</div><div class="field-input">`;
+      if (field.type === 'bool') {
+        html += `<label class="toggle"><input type="checkbox" data-key="${fieldKey}" onchange="markDirty()"><span class="toggle-slider"></span></label>`;
+      } else if (field.type === 'float') {
+        html += `<div class="range-wrap"><input type="range" data-key="${fieldKey}" min="${field.min}" max="${field.max}" step="${field.step}" onchange="markDirty();updateRangeVal(this)" oninput="updateRangeVal(this)"><span class="range-val" id="rv-${fieldKey}">${field.default}</span></div>`;
+      } else if (field.type === 'int') {
+        html += `<input type="number" data-key="${fieldKey}" min="${field.min || 0}" max="${field.max || 99999}" onchange="markDirty()">`;
+      } else {
+        html += `<input type="text" data-key="${fieldKey}" onchange="markDirty()">`;
+      }
+      html += '</div></div>';
+    });
+    html += '</div>';
+    panel.innerHTML = html;
+    panelsEl.appendChild(panel);
+  });
+
+  switchTab(categories[0]);
+}
+
+function switchTab(key) {
+  activeTab = key;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const tabs = [...Object.keys(schema), 'shop_manager', 'rcon_console', 'server_logs'];
+    t.classList.toggle('active', tabs[i] === key);
+  });
+  document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+  if (key === 'shop_manager') {
+    document.getElementById('panel-shop').classList.add('active');
+    loadShopAdmin();
+  } else if (key === 'rcon_console') {
+    document.getElementById('panel-rcon').classList.add('active');
+  } else if (key === 'server_logs') {
+    document.getElementById('panel-logs').classList.add('active');
+    loadLogs();
+  } else {
+    const panel = document.getElementById('panel-' + key);
+    if (panel) panel.classList.add('active');
+  }
+}
+
+function populateFields() {
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.dataset.key;
+    const val = currentSettings[key];
+    if (val === undefined) return;
+    if (el.type === 'checkbox') {
+      el.checked = val === 'True' || val === 'true' || val === true;
+    } else if (el.type === 'range') {
+      el.value = parseFloat(val);
+      const rv = document.getElementById('rv-' + key);
+      if (rv) rv.textContent = parseFloat(val);
+    } else {
+      el.value = val;
+    }
+  });
+}
+
+function updateRangeVal(el) {
+  const rv = document.getElementById('rv-' + el.dataset.key);
+  if (rv) rv.textContent = parseFloat(el.value).toFixed(2);
+}
+
+function markDirty() { /* visual indicator could go here */ }
+
+async function saveSettings() {
+  const updates = {};
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.dataset.key;
+    if (el.type === 'checkbox') updates[key] = el.checked ? 'True' : 'False';
+    else updates[key] = el.value;
+  });
+  const data = await api('/api/settings', { method: 'PUT', body: JSON.stringify(updates) });
+  toast(data.message, data.ok ? 'success' : 'error');
+}
+
+// ── RCON ──
+async function sendRcon() {
+  const input = document.getElementById('rcon-cmd');
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  const output = document.getElementById('rcon-output');
+  output.textContent += '> ' + cmd + '\n';
+  input.value = '';
+  try {
+    const data = await api('/api/rcon', { method: 'POST', body: JSON.stringify({ command: cmd }) });
+    output.textContent += (data.response || '(no response)') + '\n';
+  } catch (e) {
+    output.textContent += 'Error: ' + e.message + '\n';
+  }
+  output.scrollTop = output.scrollHeight;
+}
+
+// ── Logs ──
+async function loadLogs() {
+  try {
+    const data = await api('/api/logs?lines=200');
+    document.getElementById('log-output').textContent = data.logs || 'No logs available.';
+    const el = document.getElementById('log-output');
+    el.scrollTop = el.scrollHeight;
+  } catch {}
+}
+
+// ── Shop Admin ──
+async function loadShopAdmin() {
+  try {
+    const shop = await api('/api/shop');
+    const el = document.getElementById('shop-list');
+    if (!shop.length) { el.innerHTML = '<p style="color:var(--text-dim)">No packages yet. Click "+ New Package" to create one.</p>'; return; }
+    el.innerHTML = shop.map(p => `
+      <div class="field-row" style="padding:12px 16px;margin-bottom:6px;background:var(--surface);border-radius:6px;border:1px solid var(--border)">
+        <div style="flex:1">
+          <strong>${p.emoji || '📦'} ${p.name}</strong> <code style="color:var(--text-dim);font-size:0.8rem">${p.id}</code>
+          ${!p.enabled ? '<span style="color:var(--red);font-size:0.75rem"> (disabled)</span>' : ''}
+          <br><span style="color:var(--text-dim);font-size:0.85rem">${p.description || ''} • ${p.items.length} items${p.price ? ' • ' + p.price + ' coins' : ''}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="secondary" onclick="togglePackage('${p.id}',${!p.enabled})" style="padding:6px 12px;font-size:0.8rem">${p.enabled ? '🚫 Disable' : '✅ Enable'}</button>
+          <button class="secondary" onclick="grantPackage('${p.id}')" style="padding:6px 12px;font-size:0.8rem">🎁 Grant</button>
+          <button class="secondary" onclick="deletePackage('${p.id}')" style="padding:6px 12px;font-size:0.8rem;color:var(--red)">🗑</button>
+        </div>
+      </div>
+    `).join('');
+  } catch { document.getElementById('shop-list').innerHTML = 'Failed to load shop.'; }
+}
+
+function showNewPackageForm() {
+  document.getElementById('shop-new-form').style.display = 'block';
+  document.getElementById('shop-new-items').innerHTML = '';
+  addItemRow('shop-new-items');
+}
+
+function addItemRow(containerId) {
+  const div = document.getElementById(containerId);
+  const row = document.createElement('div');
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 2fr 80px 30px;gap:6px;margin-bottom:4px';
+  row.innerHTML = `
+    <input type="number" placeholder="Item ID" class="shop-item-id" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px">
+    <input type="text" placeholder="Name" class="shop-item-name" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px">
+    <input type="number" placeholder="Qty" value="1" class="shop-item-qty" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px">
+    <button onclick="this.parentElement.remove()" style="padding:4px;font-size:0.8rem" class="secondary">✕</button>
+  `;
+  div.appendChild(row);
+}
+
+async function createPackage() {
+  const items = [];
+  document.querySelectorAll('#shop-new-items > div').forEach(row => {
+    const id = parseInt(row.querySelector('.shop-item-id').value);
+    const name = row.querySelector('.shop-item-name').value;
+    const qty = parseInt(row.querySelector('.shop-item-qty').value) || 1;
+    if (id && name) items.push({ id, name, qty });
+  });
+  const pkg = {
+    id: document.getElementById('shop-new-id').value.trim().toLowerCase().replace(/\s+/g, '-'),
+    name: document.getElementById('shop-new-name').value.trim(),
+    emoji: document.getElementById('shop-new-emoji').value.trim() || '📦',
+    description: document.getElementById('shop-new-desc').value.trim(),
+    category: document.getElementById('shop-new-cat').value,
+    price: parseInt(document.getElementById('shop-new-price').value) || 0,
+    items,
+  };
+  if (!pkg.id || !pkg.name) return toast('ID and Name required', 'error');
+  const res = await api('/api/shop', { method: 'POST', body: JSON.stringify(pkg) });
+  toast(res.message, res.ok ? 'success' : 'error');
+  if (res.ok) { document.getElementById('shop-new-form').style.display = 'none'; loadShopAdmin(); }
+}
+
+async function togglePackage(id, enabled) {
+  const res = await api('/api/shop/' + id, { method: 'PUT', body: JSON.stringify({ enabled }) });
+  toast(res.message, res.ok ? 'success' : 'error');
+  if (res.ok) loadShopAdmin();
+}
+
+async function grantPackage(id) {
+  const res = await api('/api/shop/' + id + '/grant', { method: 'POST' });
+  if (res.ok) {
+    const summary = res.results.map(r => (r.ok ? '✅' : '❌') + ' ' + r.name + ' x' + r.qty).join('\n');
+    toast('Granted ' + res.package + '\n' + summary, 'success');
+  } else toast(res.message, 'error');
+}
+
+async function deletePackage(id) {
+  if (!confirm('Delete package "' + id + '"?')) return;
+  const res = await api('/api/shop/' + id, { method: 'DELETE' });
+  toast(res.message, res.ok ? 'success' : 'error');
+  if (res.ok) loadShopAdmin();
+}
+
+// ── Toast ──
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
 </script>
 </body>
 </html>

@@ -13,8 +13,8 @@ Internet
 ```
 
 - **Server Machine**: Home PC (10.0.0.56, public IP 76.31.186.50)
-- **Conan Server**: DedicatedServerLauncher (SteamCMD app 443030)
-- **Admin Panel**: `F:\GitHub\conan-admin` / `D:\conan-admin` (Node.js + Express, port 3847)
+- **Conan Server**: Funcom Dedicated Server Launcher (`C:\Users\david\Downloads\DedicatedServerLauncher\ConanExilesDedicatedServer`)
+- **Admin Panel**: `D:\conan-admin` (Node.js + Express, port 3847)
 - **Tunnel**: Cloudflare tunnel → `conan.grudge-studio.com`
 - **Discord Webhook**: Posts heartbeat + MOTD to Grudge Studio Discord
 
@@ -32,9 +32,9 @@ Internet
 
 | Service | Credential |
 |-----------------|-------------------------------|
-| Admin Panel | Token: `grudge-conan-2026` |
-| In-game Admin | Password: `grudgeadmin2026` |
-| RCON | Password: `grudgercon2026` |
+| Admin Panel | Token: `admin123` |
+| In-game Admin | Password: `grudgestudio2026` |
+| RCON | Password: `admin123` (Game.ini) |
 
 ## Connecting
 
@@ -44,23 +44,35 @@ Internet
 
 ## Custom Balance — "Grudges Enhanced PVP"
 
+### Combat
 | Setting | Value | Effect |
 |-------------------------------|-------|--------------------------------------|
+| PlayerHealthMultiplier | 5.0 | **1000 HP** base (200 × 5) |
 | PlayerDamageMultiplier | 1.0 | Standard player damage |
-| PlayerDamageTakenMultiplier | 0.8 | Players take 80% of incoming damage |
+| PlayerDamageTakenMultiplier | 0.6 | **40% damage reduction** for players |
 | NPCDamageMultiplier | 2.0 | NPCs hit twice as hard |
-| NPCDamageTakenMultiplier | 0.5 | NPCs are tanky (take half damage) |
-| ThrallDamageToPlayersMultiplier | 2.0 | Thralls hit players at 2x — war-ready |
+| NPCDamageTakenMultiplier | 0.6 | **40% DR** for mobs |
+| MinionDamageTakenMultiplier | 0.6 | **40% DR** for minions |
+| PetDamageTakenMultiplier | 0.6 | **40% DR** for pets |
+| ThrallDamageToPlayersMultiplier | 2.0 | Thralls hit players at 2x |
 | ThrallDamageToNPCsMultiplier | 2.0 | Thralls hit NPCs at 2x |
+| FriendlyFireDamageMultiplier | 0.1 | 10% friendly fire |
+
+### Economy
+| Setting | Value | Effect |
+|-------------------------------|-------|--------------------------------------|
 | HarvestAmountMultiplier | 2.5 | 2.5x resource gathering |
 | PlayerXPRateMultiplier | 3.0 | 3x XP across all sources |
 | CraftingCostMultiplier | 0.5 | Half crafting material cost |
+| ItemConvertionMultiplier | 0.5 | 2x crafting speed |
+| ThrallConversionMultiplier | 0.5 | 2x thrall break speed |
+| ResourceRespawnSpeedMultiplier | 2.0 | 2x resource respawn |
 | BuildingDamageMultiplier | 2.5 | Raids hit hard |
-| DropEquipmentOnDeath | 2 | Full loot PVP |
-| EverybodyCanLootCorpse | True | Anyone can loot your body |
-| MinionPopulationPerPlayer | 24 | Up to 24 followers per player |
+| EverybodyCanLootCorpse | True | Full loot PVP |
+| clanMaxSize | 12 | Max 12 per clan |
+| PlayerCorruptionGainMultiplier | 0.5 | Half corruption gain |
 
-NPCs are tough (2x damage, 0.5x damage taken), thralls are balanced for war (2x both ways), and raids matter (2.5x building damage). All settings editable via admin panel (restart to apply).
+Everyone has 1000 HP and 40% DR across the board. NPCs hit 2x, thralls are war-ready at 2x both ways, raids matter at 2.5x building damage. All settings editable via admin panel (restart to apply).
 
 ## Admin Panel Features
 
@@ -111,24 +123,27 @@ Auth: pass `x-admin-token` header or `?token=` query param.
 ## File Layout
 
 ```
-D:\ConanServer\                         # Game server (SteamCMD)
+C:\Users\david\Downloads\DedicatedServerLauncher\ConanExilesDedicatedServer\
 ├── ConanSandboxServer.exe              # Server launcher
 └── ConanSandbox\Saved\
     ├── Config\WindowsServer\
     │   ├── ServerSettings.ini          # All gameplay settings
-    │   └── Engine.ini                  # Ports, network, tick rate
+    │   ├── Engine.ini                  # Ports, network, server name
+    │   └── Game.ini                    # RCON config ([RconPlugin])
     ├── Logs\ConanSandbox.log           # Server log
     └── game*.db                        # World database
 
 D:\conan-admin\                         # Admin panel + Discord bot
 ├── server.js                           # Express backend (web admin)
-├── bot.js                              # Discord bot (28 slash commands)
+├── bot.js                              # Discord bot (35 slash commands)
 ├── public\index.html                   # Frontend UI
 ├── data\                               # Bot persistent storage
 │   ├── homes.json                      # Player home locations
 │   ├── warps.json                      # Warp points
 │   ├── spawns.json                     # Custom spawn point
-│   └── players.json                    # Discord↔Steam ID links
+│   ├── players.json                    # Discord↔character links (auto-link)
+│   ├── online-players.json             # Cached online player list (60s poll)
+│   └── shop.json                       # Shop/kit packages
 ├── backup.ps1                          # Backup script
 ├── .env                                # Discord + RCON credentials
 ├── .env.example                        # Template
@@ -142,7 +157,10 @@ C:\Users\david\.cloudflared\
 
 ## Discord Bot
 
-The bot (`bot.js`) runs as **Grudge Bot#0024** with 30 slash commands. It registers globally by default, or per-guild (instantly) when `DISCORD_GUILD_ID` is set in `.env`.
+The bot (`bot.js`) runs as **Grudge Bot#0024** with 35 slash commands. It registers globally by default, or per-guild (instantly) when `DISCORD_GUILD_ID` is set in `.env`.
+
+### Auto-Link System
+Players link their Discord to their in-game character by typing `/link <character name>` while online. The bot polls `listplayers` via RCON every 60s, caches online players, and matches by character name (case-insensitive, partial match supported). No raw Steam IDs needed.
 
 ### Player Commands
 | Command | Description |
@@ -160,8 +178,9 @@ The bot (`bot.js`) runs as **Grudge Bot#0024** with 30 slash commands. It regist
 | `/warp <name>` | Teleport to a warp point |
 | `/warps` | List all warp points |
 | `/spawn` | Teleport to server spawn |
-| `/link <steamid>` | Link Discord to Steam ID |
-| `/unlink` | Unlink Steam ID |
+| `/link <character>` | Link Discord to in-game character (must be online) |
+| `/unlink` | Unlink character |
+| `/whoami` | Show linked character info + online status |
 
 ### Admin Commands
 | Command | Description |
@@ -215,11 +234,11 @@ The bot and admin panel read the following from `.env` (see `.env.example` if pr
 | `DISCORD_CLIENT_ID` | `bot.js` | Application ID for slash-command registration |
 | `DISCORD_GUILD_ID` | `bot.js` | Optional — instant per-guild registration for dev |
 | `DISCORD_CONAN_WEBHOOK` | `bot.js`, `motd.js` | Webhook URL for heartbeat and MOTD posts |
-| `RCON_HOST` | `bot.js` | RCON host (defaults to `127.0.0.1`; server actually binds `10.0.0.132`) |
+| `RCON_HOST` | `bot.js` | RCON host (`10.0.0.56` — server's MULTIHOME IP) |
 | `RCON_PORT` | `bot.js` | RCON port (default `25575`) |
-| `RCON_PASSWORD` | `bot.js` | RCON password — must match the `-RCONPassword=` flag |
+| `RCON_PASSWORD` | `bot.js` | RCON password — must match Game.ini `[RconPlugin]` |
 | `CONAN_ADMIN_TOKEN` | `server.js` | Admin panel bearer token (default `admin123`) |
-| `CONAN_DIR` | `bot.js` | Override the Conan install dir (default `D:\ConanServer`) |
+| `CONAN_DIR` | `bot.js` | Conan install dir (launcher path) |
 | `PORT` | `server.js` | Admin panel port (default `3847`) |
 
 ### RCON Note
@@ -237,8 +256,10 @@ $maps.Add(7777,'UDP','7777','10.0.0.132',1,'Conan Game')
 $maps.Add(7778,'UDP','7778','10.0.0.132',1,'Conan Game Raw')
 $maps.Add(27015,'UDP','27015','10.0.0.132',1,'Conan Steam Query')
 
-# 2. Conan server (RCON flags required — ini alone won't enable it)
-Start-Process "D:\ConanServer\ConanSandboxServer.exe" -ArgumentList "-log -RCONEnabled=1 -RCONPort=25575 -RCONPassword=grudgercon2026" -WorkingDirectory "D:\ConanServer"
+# 2. Conan server (launched by Funcom Dedicated Server Launcher, or manually):
+# The launcher at C:\Users\david\Downloads\DedicatedServerLauncher handles startup.
+# Manual fallback:
+Start-Process "C:\Users\david\Downloads\DedicatedServerLauncher\ConanExilesDedicatedServer\ConanSandboxServer.exe" -ArgumentList "/Game/Maps/ConanSandbox/ConanSandbox -MULTIHOME=10.0.0.56 -MaxPlayers=40 -log" -WorkingDirectory "C:\Users\david\Downloads\DedicatedServerLauncher\ConanExilesDedicatedServer"
 
 # 3. Admin panel
 Start-Process node -ArgumentList "D:\conan-admin\server.js" -WorkingDirectory "D:\conan-admin" -WindowStyle Hidden

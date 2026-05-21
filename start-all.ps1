@@ -7,14 +7,14 @@ Write-Host "=== GRUDGE EXILES — Full Deploy ===" -ForegroundColor Red
 Write-Host "[1/5] UPnP port forwards..." -ForegroundColor Cyan
 $upnp = [activator]::CreateInstance([type]::GetTypeFromProgID('HNetCfg.NATUPnP'))
 $maps = $upnp.StaticPortMappingCollection
-try { $maps.Add(7777,'UDP','7777','10.0.0.132',1,'Conan Game') } catch {}
-try { $maps.Add(7778,'UDP','7778','10.0.0.132',1,'Conan Game Raw') } catch {}
-try { $maps.Add(27015,'UDP','27015','10.0.0.132',1,'Conan Steam Query') } catch {}
-Write-Host "  UDP 7777, 7778, 27015 -> 10.0.0.132" -ForegroundColor Green
+try { $maps.Add(7777,'UDP','7777','10.0.0.56',1,'Conan Game') } catch {}
+try { $maps.Add(7778,'UDP','7778','10.0.0.56',1,'Conan Game Raw') } catch {}
+try { $maps.Add(27015,'UDP','27015','10.0.0.56',1,'Conan Steam Query') } catch {}
+Write-Host "  UDP 7777, 7778, 27015 -> 10.0.0.56" -ForegroundColor Green
 
 # 2. Conan Server
 Write-Host "[2/5] Starting Conan server..." -ForegroundColor Cyan
-Start-Process "D:\ConanServer\ConanSandboxServer.exe" -ArgumentList "-log -Multihome=10.0.0.132 -MULTIHOMEHTTP=10.0.0.132 -Port=7777 -QueryPort=27015 -RCONEnabled=1 -RCONPort=25575 -RCONPassword=grudgercon2026" -WorkingDirectory "D:\ConanServer"
+Start-Process "D:\ConanServer\ConanSandboxServer.exe" -ArgumentList "-log -Multihome=10.0.0.56 -MULTIHOMEHTTP=10.0.0.56 -Port=7777 -QueryPort=27015 -RCONEnabled=1 -RCONPort=25575 -RCONPassword=grudgercon2026" -WorkingDirectory "D:\ConanServer"
 Write-Host "  Server launching with RCON enabled" -ForegroundColor Green
 
 # 3. Admin Panel
@@ -33,6 +33,6 @@ Start-Process cloudflared -ArgumentList "tunnel","--config","C:\Users\david\.clo
 Write-Host "  Tunnel -> conan.grudge-studio.com" -ForegroundColor Green
 
 Write-Host "`n=== ALL SERVICES LAUNCHED ===" -ForegroundColor Green
-Write-Host "Server: 76.31.186.50:7777" -ForegroundColor Yellow
+Write-Host "Server: 76.31.186.50:7777 (LAN: 10.0.0.56)" -ForegroundColor Yellow
 Write-Host "Admin:  https://conan.grudge-studio.com" -ForegroundColor Yellow
 Write-Host "Allow 30-60s for Conan to fully boot" -ForegroundColor Gray
