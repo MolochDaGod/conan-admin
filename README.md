@@ -9,13 +9,14 @@ Internet
   │
   ├─ conan.grudge-studio.com ──▶ Cloudflare Tunnel ──▶ localhost:3847 (Admin Panel)
   │
-  └─ 76.31.186.50:7777 ──▶ UPnP/Port Forward ──▶ 10.0.0.132:7777 (Conan Server)
+  └─ 76.31.186.50:7777 ──▶ Router Port Forward ──▶ 10.0.0.56:7777 (Conan Server)
 ```
 
-- **Machine**: GRUDGEYONKO (Windows, RTX 3070 Ti, 32 GB RAM)
-- **Conan Server**: `D:\ConanServer` (SteamCMD app 443030)
-- **Admin Panel**: `D:\conan-admin` (Node.js + Express, port 3847)
-- **Tunnel**: Cloudflare tunnel `conan-admin` → `conan.grudge-studio.com`
+- **Server Machine**: Home PC (10.0.0.56, public IP 76.31.186.50)
+- **Conan Server**: DedicatedServerLauncher (SteamCMD app 443030)
+- **Admin Panel**: `F:\GitHub\conan-admin` / `D:\conan-admin` (Node.js + Express, port 3847)
+- **Tunnel**: Cloudflare tunnel → `conan.grudge-studio.com`
+- **Discord Webhook**: Posts heartbeat + MOTD to Grudge Studio Discord
 
 ## Ports
 
@@ -41,24 +42,25 @@ Internet
 - **Steam Browser**: View → Game Servers → search "GRUDGE EXILES"
 - **Admin Panel**: https://conan.grudge-studio.com
 
-## Custom Balance — "Hit Hard, Die Slow"
+## Custom Balance — "Grudges Enhanced PVP"
 
-|| Setting | Value | Effect |
-||-------------------------------|-------|--------------------------------------|
-|| PlayerDamageMultiplier | 1.4 | Weapons deal 40% more damage |
-|| PlayerDamageTakenMultiplier | 0.4 | Players take 40% of incoming damage (60% reduction) |
-|| PlayerHealthMultiplier | 2.0 | Players have 2x health |
-|| NPCHealthMultiplier | 2.0 | NPCs have 2x health |
-|| PetDamageMultiplier | 2.0 | Pets hit 2x harder |
-|| PetHealthMultiplier | 3.0 | Pets have 3x health |
-|| HarvestAmountMultiplier | 3.0 | 3x resource gathering |
-|| PlayerXPRateMultiplier | 3.0 | 3x XP across all sources |
-|| DropEquipmentOnDeath | True | Full loot PVP |
-|| EverybodyCanLootCorpse | True | Anyone can loot your body |
+| Setting | Value | Effect |
+|-------------------------------|-------|--------------------------------------|
+| PlayerDamageMultiplier | 1.0 | Standard player damage |
+| PlayerDamageTakenMultiplier | 0.8 | Players take 80% of incoming damage |
+| NPCDamageMultiplier | 2.0 | NPCs hit twice as hard |
+| NPCDamageTakenMultiplier | 0.5 | NPCs are tanky (take half damage) |
+| ThrallDamageToPlayersMultiplier | 2.0 | Thralls hit players at 2x — war-ready |
+| ThrallDamageToNPCsMultiplier | 2.0 | Thralls hit NPCs at 2x |
+| HarvestAmountMultiplier | 2.5 | 2.5x resource gathering |
+| PlayerXPRateMultiplier | 3.0 | 3x XP across all sources |
+| CraftingCostMultiplier | 0.5 | Half crafting material cost |
+| BuildingDamageMultiplier | 2.5 | Raids hit hard |
+| DropEquipmentOnDeath | 2 | Full loot PVP |
+| EverybodyCanLootCorpse | True | Anyone can loot your body |
+| MinionPopulationPerPlayer | 24 | Up to 24 followers per player |
 
-Weapons hit at 1.4x but every entity has 2x health (pets 3x) and players have 60% damage reduction. Fights are long, strategic wars of attrition. All weapon types and combat styles are viable — gear, armor, food, and DoT stacking all matter.
-
-All settings are editable live via the admin panel (restart required to apply).
+NPCs are tough (2x damage, 0.5x damage taken), thralls are balanced for war (2x both ways), and raids matter (2.5x building damage). All settings editable via admin panel (restart to apply).
 
 ## Admin Panel Features
 
