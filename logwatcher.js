@@ -15,8 +15,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const Database = require('better-sqlite3');
 
-const LOG_PATH = 'D:\\ConanServer\\ConanSandbox\\Saved\\Logs\\ConanSandbox.log';
+const LOG_PATH = (process.env.CONAN_DIR || 'D:\\ConanServer') + '\\ConanSandbox\\Saved\\Logs\\ConanSandbox.log';
 const DATA_DIR = path.join(__dirname, 'data');
 const HOMES_FILE = path.join(DATA_DIR, 'homes.json');
 const WARPS_FILE = path.join(DATA_DIR, 'warps.json');
@@ -28,18 +29,25 @@ function load(file, fallback = {}) {
 function save(file, data) { fs.writeFileSync(file, JSON.stringify(data, null, 2)); }
 
 // ── Chat line parser ──
-// Conan Exiles log format for chat:
-//   [2026.05.19-20.05.00:123][  0]ChatWindow: Character PlayerName said: message
-//   or: [2026.05.19-20.05.00:123][  0]ChatWindow: PlayerName: message
-const CHAT_REGEX = /ChatWindow:.*?(?:Character\s+(.+?)\s+said:|(.+?):\s*)\s*(.+)/i;
+// Conan Exiles Enhanced log format:
+//   ChatWindow: Character Racalvin Pirate King (uid 109, player 76561198113644718) said: !warp home
+//   ChatWindow: PlayerName: message
+const CHAT_REGEX_ENHANCED = /ChatWindow:\s*Character\s+(.+?)\s*\(uid\s+\d+,\s*player\s+\d+\)\s+said:\s*(.+)/i;
+const CHAT_REGEX_LEGACY = /ChatWindow:\s*(.+?):\s+(.+)/i;
 
 function parseChatLine(line) {
-  const m = line.match(CHAT_REGEX);
-  if (!m) return null;
-  const player = (m[1] || m[2] || '').trim();
-  const message = (m[3] || '').trim();
-  if (!player || !message) return null;
-  return { player, message };
+  // Try Enhanced format first (has uid/player info)
+  let m = line.match(CHAT_REGEX_ENHANCED);
+  if (m) return { player: m[1].trim(), message: m[2].trim() };
+  // Fallback to legacy format
+  m = line.match(CHAT_REGEX_LEGACY);
+  if (m) {
+    const player = m[1].trim();
+    const message = m[2].trim();
+    if (player.includes('Character')) return null; // avoid partial matches
+    return { player, message };
+  }
+  return null;
 }
 
 // ── Command handlers ──
@@ -49,17 +57,22 @@ function handleChatCommand(player, message, rconFn, discordClient) {
 
   switch (cmd) {
     case '!sethome': {
-      // !sethome <name> <x> <y> <z>
-      if (parts.length < 5) {
-        broadcast(rconFn, `[GRUDGE] ${player}: Usage: !sethome <name> <x> <y> <z>`);
+      // !sethome <name> — auto-reads position from game DB
+      if (parts.length < 2) {
+        broadcast(rconFn, `[GRUDGE] ${player}: Usage: !sethome <name>`);
         return;
       }
       const name = parts[1].toLowerCase();
-      const x = parseFloat(parts[2]);
-      const y = parseFloat(parts[3]);
-      const z = parseFloat(parts[4]);
-      if (isNaN(x) || isNaN(y) || isNaN(z)) {
-        broadcast(rconFn, `[GRUDGE] ${player}: Invalid coordinates.`);
+      let x, y, z;
+      try {
+        const dbPath = (process.env.CONAN_DIR || 'D:\\ConanServer') + '\\ConanSandbox\\Saved\\game_0.db';
+        const db = new Database(dbPath, { readonly: true, fileMustExist: true });
+        const row = db.prepare('SELECT ap.x, ap.y, ap.z FROM characters c JOIN actor_position ap ON c.id = ap.id WHERE LOWER(c.char_name) = LOWER(?)').get(player);
+        db.close();
+        if (!row) { broadcast(rconFn, `[GRUDGE] ${player}: Could not find your position.`); return; }
+        x = Math.round(row.x); y = Math.round(row.y); z = Math.round(row.z);
+      } catch (e) {
+        broadcast(rconFn, `[GRUDGE] ${player}: Error reading position.`);
         return;
       }
       const homes = load(HOMES_FILE);
@@ -73,7 +86,6 @@ function handleChatCommand(player, message, rconFn, discordClient) {
       homes[key][name] = { x, y, z, set: Date.now(), setBy: player };
       save(HOMES_FILE, homes);
       broadcast(rconFn, `[GRUDGE] Home '${name}' saved at ${x}, ${y}, ${z}`);
-      postChatToDiscord(discordClient, `🏠 **${player}** set home **${name}** at \`${x}, ${y}, ${z}\``);
       break;
     }
 
@@ -91,13 +103,12 @@ function handleChatCommand(player, message, rconFn, discordClient) {
         return;
       }
       const h = homes[key][name];
-      // Two-step teleport: move admin to coords, then pull player to admin
-      rconFn(`con TeleportPlayer ${h.x} ${h.y} ${h.z}`)
-        .then(() => new Promise(r => setTimeout(r, 500)))
-        .then(() => rconFn(`con TeleportToMe ${player}`))
-        .catch(() => {});
+      // Look up player's userId from online cache for targeted teleport
+      const onlineCache = load(path.join(DATA_DIR, 'online-players.json'));
+      const onlineP = (onlineCache.players || []).find(p => p.charName.toLowerCase() === player.toLowerCase());
+      const teleId = onlineP ? onlineP.userId : player;
+      rconFn(`con ${teleId} TeleportPlayer ${h.x} ${h.y} ${h.z}`).catch(() => {});
       broadcast(rconFn, `[GRUDGE] Teleporting ${player} to home '${name}'`);
-      postChatToDiscord(discordClient, `🏠 **${player}** → home **${name}** (\`${h.x}, ${h.y}, ${h.z}\`)`);
       break;
     }
 
@@ -141,13 +152,12 @@ function handleChatCommand(player, message, rconFn, discordClient) {
         return;
       }
       const w = warps[name];
-      // Two-step: admin teleports to warp, then pulls player
-      rconFn(`con TeleportPlayer ${w.x} ${w.y} ${w.z}`)
-        .then(() => new Promise(r => setTimeout(r, 500)))
-        .then(() => rconFn(`con TeleportToMe ${player}`))
-        .catch(() => {});
+      // Look up player's userId for targeted teleport
+      const onlineCache2 = load(path.join(DATA_DIR, 'online-players.json'));
+      const onlineP2 = (onlineCache2.players || []).find(p => p.charName.toLowerCase() === player.toLowerCase());
+      const teleId2 = onlineP2 ? onlineP2.userId : player;
+      rconFn(`con ${teleId2} TeleportPlayer ${w.x} ${w.y} ${w.z}`).catch(() => {});
       broadcast(rconFn, `[GRUDGE] Warping ${player} to '${name}'`);
-      postChatToDiscord(discordClient, `🌀 **${player}** warped to **${name}**`);
       break;
     }
 
@@ -177,6 +187,22 @@ function broadcast(rconFn, msg) {
 
 async function postChatToDiscord(discordClient, content) {
   if (!discordClient) return;
+  // Use webhook for avatar branding if available
+  const webhookUrl = process.env.DISCORD_CONAN_WEBHOOK;
+  if (webhookUrl) {
+    const https = require('https');
+    const m = webhookUrl.match(/\/webhooks\/(\d+)\/([\w-]+)/);
+    if (m) {
+      const payload = JSON.stringify({
+        username: 'GRUDGE EXILES',
+        avatar_url: 'https://conan.grudge-studio.com/img/hero.jpg',
+        content,
+      });
+      const opts = { hostname: 'discord.com', path: `/api/webhooks/${m[1]}/${m[2]}`, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } };
+      const req = https.request(opts); req.write(payload); req.end();
+      return;
+    }
+  }
   try {
     const channel = await discordClient.channels.fetch(CHAT_CHANNEL);
     if (channel) await channel.send(content);

@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const net = require('net');
 
-const SETTINGS_PATH = 'D:\\ConanServer\\ConanSandbox\\Saved\\Config\\WindowsServer\\ServerSettings.ini';
+const SETTINGS_PATH = (process.env.CONAN_DIR || 'D:\\ConanServer') + '\\ConanSandbox\\Saved\\Config\\WindowsServer\\ServerSettings.ini';
 const MOTD_LOG = path.join(__dirname, 'data', 'motd-history.json');
 
 // ── Message pools by theme ──
@@ -102,7 +102,10 @@ function rconBroadcast(message) {
       return buf;
     }
     let authDone = false, result = '';
-    const c = net.connect(25575, '10.0.0.132', () => c.write(rconPacket(1, 3, 'grudgercon2026')));
+    const host = process.env.RCON_HOST || '10.0.0.56';
+    const port = parseInt(process.env.RCON_PORT) || 25575;
+    const pw = process.env.RCON_PASSWORD || 'admin123';
+    const c = net.connect(port, host, () => c.write(rconPacket(1, 3, pw)));
     c.setTimeout(8000);
     c.on('data', d => {
       const body = d.toString('utf8', 12, d.length - 2);
@@ -208,7 +211,7 @@ async function postToWebhook(motd) {
     footer: { text: 'conan.grudge-studio.com • Changes daily at midnight' },
   };
 
-  const payload = JSON.stringify({ username: 'GRUDGE EXILES', embeds: [embed] });
+  const payload = JSON.stringify({ username: 'GRUDGE EXILES', avatar_url: 'https://conan.grudge-studio.com/img/hero.jpg', embeds: [embed] });
   const stored = loadWebhookMsgs();
   const msgId = stored.motd;
 

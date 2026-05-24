@@ -191,7 +191,7 @@
     <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.15) 40%,rgba(0,0,0,.5) 70%,rgba(10,10,15,.95) 100%)"></div>
     <div style="position:relative;z-index:1;text-align:center;padding:2rem;max-width:700px;margin-bottom:4rem">
       <div id="landing-status" style="margin-bottom:1rem"></div>
-      <p style="color:var(--text);font-size:1.05rem;text-shadow:0 2px 8px rgba(0,0,0,.9);font-weight:500">Full Loot PVP • 2x Health • 1.4x Damage • 60% DR • 3x Rates</p>
+      <p style="color:var(--text);font-size:1.05rem;text-shadow:0 2px 8px rgba(0,0,0,.9);font-weight:500">Full Loot PVP • 1000 HP • 40% DR • 3x Thralls vs Players • 3x Rates</p>
 
       <!-- One-Click Join Button -->
       <a href="steam://connect/76.31.186.50:7777" style="display:inline-block;margin-top:1.5rem;padding:18px 50px;font-family:var(--font-heading);font-size:1.3rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#c0392b 0%,#8b0000 100%);border:2px solid #d4af37;border-radius:8px;text-decoration:none;box-shadow:0 0 30px rgba(192,57,43,.4),0 0 60px rgba(212,175,55,.15),inset 0 1px 0 rgba(255,255,255,.1);transition:all .3s;cursor:pointer" onmouseover="this.style.transform='translateY(-3px) scale(1.02)';this.style.boxShadow='0 0 40px rgba(192,57,43,.6),0 0 80px rgba(212,175,55,.3)'" onmouseout="this.style.transform='';this.style.boxShadow='0 0 30px rgba(192,57,43,.4),0 0 60px rgba(212,175,55,.15),inset 0 1px 0 rgba(255,255,255,.1)'">&#9876; Join Server</a>
@@ -199,16 +199,16 @@
 
       <div style="margin-top:1.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
         <div style="background:rgba(0,0,0,.7);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">1.4x</div>
-          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Damage</div>
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">1000</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Base HP</div>
+        </div>
+        <div style="background:rgba(0,0,0,.7);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">40%</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">DR</div>
         </div>
         <div style="background:rgba(0,0,0,.7);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
           <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">2x</div>
-          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">Health</div>
-        </div>
-        <div style="background:rgba(0,0,0,.7);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
-          <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">60%</div>
-          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">DR</div>
+          <div style="font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em">NPC DMG</div>
         </div>
         <div style="background:rgba(0,0,0,.7);border:1px solid var(--border-gold);border-radius:8px;padding:10px 20px;backdrop-filter:blur(6px)">
           <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">3x</div>
@@ -237,23 +237,23 @@
       <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold))"></div>
         <h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">⚔ Combat</h4>
-        <p>Weapon Damage: <strong style="color:var(--yellow)">1.4x</strong></p>
-        <p>Damage Taken: <strong style="color:var(--yellow)">0.4x</strong></p>
-        <p>Player Health: <strong style="color:var(--yellow)">2x</strong></p>
-        <p>NPC Health: <strong style="color:var(--yellow)">2x</strong></p>
+        <p>Player HP: <strong style="color:var(--yellow)">1000 (5x)</strong></p>
+        <p>Damage Taken: <strong style="color:var(--yellow)">0.6x (40% DR)</strong></p>
+        <p>NPC Damage: <strong style="color:var(--yellow)">2x</strong></p>
+        <p>Friendly Fire: <strong style="color:var(--yellow)">10%</strong></p>
       </div>
       <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--gold))"></div>
         <h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">🐾 Pets & Thralls</h4>
-        <p>Pet Damage: <strong style="color:var(--yellow)">2x</strong></p>
-        <p>Pet Health: <strong style="color:var(--yellow)">3x</strong></p>
-        <p>Taming Speed: <strong style="color:var(--yellow)">3x faster</strong></p>
-        <p>Minion Damage: <strong style="color:var(--yellow)">1.5x</strong></p>
+        <p>Thrall vs Players: <strong style="color:var(--yellow)">3x</strong></p>
+        <p>Thrall vs NPCs: <strong style="color:var(--yellow)">0.8x</strong></p>
+        <p>Follower DR: <strong style="color:var(--yellow)">40%</strong></p>
+        <p>Taming Speed: <strong style="color:var(--yellow)">2x faster</strong></p>
       </div>
       <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--gold))"></div>
         <h4 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:.75rem;letter-spacing:.1em">📦 Rates</h4>
-        <p>Harvest: <strong style="color:var(--yellow)">3x</strong></p>
+        <p>Harvest: <strong style="color:var(--yellow)">2.5x</strong></p>
         <p>XP: <strong style="color:var(--yellow)">3x all</strong></p>
         <p>Craft Cost: <strong style="color:var(--yellow)">0.5x</strong></p>
         <p>Craft Speed: <strong style="color:var(--yellow)">2x</strong></p>
@@ -282,16 +282,20 @@
       <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--gold))"></div>
         <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">🌀 Warp Points</h3>
-        <ul style="list-style:none;line-height:2.2">
-          <li>🌀 <strong>noob-river</strong> — Starting area</li>
-          <li>🌀 <strong>sepermeru</strong> — City of Relic Hunters</li>
-          <li>🌀 <strong>mounds</strong> — Mounds of the Dead</li>
-          <li>🌀 <strong>volcano</strong> — Volcano region</li>
-          <li>🌀 <strong>jungle</strong> — Eastern jungle</li>
-          <li>🌀 <strong>unnamed-city</strong> — Unnamed City</li>
-          <li>🔮 <strong>sorcery-cave</strong> — Unlock sorcery here!</li>
+        <ul style="list-style:none;line-height:2">
+          <li>🐉 <strong>dregs</strong> — Southern river</li>
+          <li>🕳️ <strong>sinkhole</strong> — Central desert</li>
+          <li>🏚️ <strong>unnamed-city</strong> — The Archives</li>
+          <li>💨 <strong>shattered</strong> — Brimstone & Sepermeru</li>
+          <li>🐚 <strong>dagons-eye</strong> — Eastern jungle</li>
+          <li>🌴 <strong>staging-area</strong> — Deep jungle</li>
+          <li>🏰 <strong>black-keep</strong> — Frozen north</li>
+          <li>❄️ <strong>temple-frost</strong> — Frost dungeon</li>
+          <li>💀 <strong>mounds</strong> — Northern highlands</li>
+          <li>🌋 <strong>volcano</strong> — Summit</li>
+          <li>🔮 <strong>sorcery-cave</strong> — Learn sorcery!</li>
         </ul>
-        <p style="margin-top:.75rem;color:var(--text-dim);font-size:.85rem">Type <code style="color:var(--yellow)">/warps</code> in Discord or <code style="color:var(--yellow)">!warps</code> in-game</p>
+        <p style="margin-top:.5rem;color:var(--text-dim);font-size:.85rem">Type <code style="color:var(--yellow)">/map</code> in Discord or <code style="color:var(--yellow)">!warps</code> in-game</p>
       </div>
     </div>
 
@@ -302,10 +306,10 @@
       <ol style="line-height:2.4;padding-left:1.2rem">
         <li><strong>Join:</strong> Click the button above or Direct Connect to <code style="color:var(--yellow)">76.31.186.50:7777</code></li>
         <li><strong>Get Sorcery:</strong> Head to Shaleback Hollow cave or <code style="color:var(--yellow)">/warp sorcery-cave</code></li>
-        <li><strong>Set a Home:</strong> Type <code style="color:var(--yellow)">!sethome base X Y Z</code> in-game chat or <code style="color:var(--yellow)">/sethome</code> in Discord</li>
-        <li><strong>Fast Travel:</strong> Map Rooms at every obelisk! Type <code style="color:var(--yellow)">!warps</code> in-game</li>
-        <li><strong>Get a Pet:</strong> Pets do 2x damage with 3x health — they're absolute tanks</li>
-        <li><strong>Fight Smart:</strong> Everyone has 2x health + 60% DR. Bring food, stack DoTs, outlast your enemy</li>
+        <li><strong>Set a Home:</strong> Type <code style="color:var(--yellow)">!sethome base</code> in-game chat — auto-saves your position!</li>
+        <li><strong>Fast Travel:</strong> Type <code style="color:var(--yellow)">/map</code> in Discord for interactive warp buttons, or <code style="color:var(--yellow)">!warps</code> in-game</li>
+        <li><strong>Link Your Character:</strong> Type <code style="color:var(--yellow)">/link YourName</code> in Discord while online to enable warps</li>
+        <li><strong>Fight Smart:</strong> 1000 HP + 40% DR. Bring food, stack DoTs, outlast your enemy</li>
       </ol>
     </div>
 

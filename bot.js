@@ -82,6 +82,48 @@ function getProcessInfo() {
 // ── Bot admin puppet character (always-online invisible admin for teleports) ──
 const BOT_ADMIN_CHAR = process.env.BOT_ADMIN_CHAR || 'ale';
 
+// ── A2S Steam Server Query (keyless UDP, port 27015) ──
+const dgram = require('dgram');
+const SERVER_IP = '76.31.186.50';
+const QUERY_PORT = 27015;
+const STEAM_CONNECT = `steam://connect/${SERVER_IP}:7777`;
+const AVATAR_URL = 'https://conan.grudge-studio.com/img/hero.jpg';
+
+function a2sQuery() {
+  return new Promise((resolve, reject) => {
+    const sock = dgram.createSocket('udp4');
+    // A2S_INFO request: FF FF FF FF 54 Source Engine Query\0
+    const req = Buffer.from('ffffffff54536f7572636520456e67696e6520517565727900', 'hex');
+    sock.send(req, 0, req.length, QUERY_PORT, '10.0.0.56');
+    sock.on('message', (msg) => {
+      try {
+        // Check for challenge response (0x41) — Enhanced uses this
+        if (msg.length >= 9 && msg[4] === 0x41) {
+          const challenge = msg.slice(5, 9);
+          const req2 = Buffer.concat([Buffer.from('ffffffff54536f7572636520456e67696e6520517565727900', 'hex'), challenge]);
+          sock.send(req2, 0, req2.length, QUERY_PORT, '10.0.0.56');
+          return;
+        }
+        if (msg[4] !== 0x49) { sock.close(); return resolve(null); } // not A2S_INFO response
+        let off = 6; // skip header + protocol
+        const readStr = () => { const start = off; while (msg[off] !== 0) off++; return msg.toString('utf8', start, off++); };
+        const name = readStr();
+        const map = readStr();
+        const folder = readStr();
+        const game = readStr();
+        const steamAppId = msg.readUInt16LE(off); off += 2;
+        const players = msg[off++];
+        const maxPlayers = msg[off++];
+        const bots = msg[off++];
+        sock.close();
+        resolve({ name, map, folder, game, steamAppId, players, maxPlayers, bots });
+      } catch (e) { sock.close(); resolve(null); }
+    });
+    sock.on('error', () => { sock.close(); resolve(null); });
+    setTimeout(() => { try { sock.close(); } catch {} resolve(null); }, 3000);
+  });
+}
+
 // ── Online player cache (polls listplayers every 60s) ──
 // Each entry: { idx, charName, playerName, userId, platformId, platform }
 let onlinePlayers = [];
@@ -110,15 +152,50 @@ function parsePlayerList(raw) {
   return players;
 }
 
+// Known players registry — maps charName → full player info (persists across restarts)
+const KNOWN_PLAYERS_FILE = path.join(DATA_DIR, 'known-players.json');
+
 async function refreshOnlineCache() {
   if (!isServerRunning()) { onlinePlayers = []; return; }
   try {
     const raw = await rcon('listplayers');
     onlinePlayers = parsePlayerList(raw);
     save(ONLINE_CACHE_FILE, { updated: Date.now(), players: onlinePlayers });
+    // Auto-register every online player's userId for future teleport commands
+    if (onlinePlayers.length > 0) {
+      const known = load(KNOWN_PLAYERS_FILE);
+      let changed = false;
+      for (const p of onlinePlayers) {
+        const key = p.charName.toLowerCase();
+        if (!known[key] || known[key].userId !== p.userId) {
+          known[key] = { userId: p.userId, charName: p.charName, playerName: p.playerName, platformId: p.platformId, platform: p.platform, lastSeen: Date.now() };
+          changed = true;
+        }
+      }
+      if (changed) save(KNOWN_PLAYERS_FILE, known);
+    }
   } catch {
     // Keep stale cache on RCON failure
   }
+}
+
+// Look up a player's userId from any source: linked players.json, known-players.json, or online cache
+function resolveUserId(charNameOrDiscordId) {
+  // Check linked Discord players first
+  const linked = load(PLAYERS_FILE);
+  if (linked[charNameOrDiscordId]?.userId) return linked[charNameOrDiscordId].userId;
+  // Check by charName in linked
+  for (const v of Object.values(linked)) {
+    if (v.charName && v.charName.toLowerCase() === charNameOrDiscordId.toLowerCase()) return v.userId;
+  }
+  // Check known players registry
+  const known = load(KNOWN_PLAYERS_FILE);
+  const knownEntry = known[charNameOrDiscordId.toLowerCase()];
+  if (knownEntry?.userId) return knownEntry.userId;
+  // Check live online cache
+  const online = onlinePlayers.find(p => p.charName.toLowerCase() === charNameOrDiscordId.toLowerCase());
+  if (online) return online.userId;
+  return null;
 }
 
 // Find a player in cache by character name (case-insensitive, partial match)
@@ -135,6 +212,41 @@ function findOnlinePlayer(query) {
 function getLinkedSteamId(discordUserId) {
   const players = load(PLAYERS_FILE);
   return players[discordUserId]?.steamId || null;
+}
+
+// ── Game DB — read player positions directly from SQLite (readonly, concurrent-safe) ──
+const GAME_DB_PATH = path.join(CONAN_DIR, 'ConanSandbox', 'Saved', 'game_0.db');
+const Database = require('better-sqlite3');
+
+function getPlayerPosition(charName) {
+  try {
+    const db = new Database(GAME_DB_PATH, { readonly: true, fileMustExist: true });
+    const row = db.prepare(`
+      SELECT c.char_name, c.id, ap.x, ap.y, ap.z
+      FROM characters c
+      JOIN actor_position ap ON c.id = ap.id
+      WHERE LOWER(c.char_name) = LOWER(?)
+    `).get(charName);
+    db.close();
+    return row ? { charName: row.char_name, x: Math.round(row.x), y: Math.round(row.y), z: Math.round(row.z) } : null;
+  } catch (e) {
+    console.log('[GameDB] Error reading position:', e.message);
+    return null;
+  }
+}
+
+function getAllPlayerPositions() {
+  try {
+    const db = new Database(GAME_DB_PATH, { readonly: true, fileMustExist: true });
+    const rows = db.prepare(`
+      SELECT c.char_name, c.playerId, ap.x, ap.y, ap.z
+      FROM characters c
+      JOIN actor_position ap ON c.id = ap.id
+      WHERE c.isAlive = 1
+    `).all();
+    db.close();
+    return rows.map(r => ({ charName: r.char_name, playerId: r.playerId, x: Math.round(r.x), y: Math.round(r.y), z: Math.round(r.z) }));
+  } catch { return []; }
 }
 
 // ── Embed colors ──
@@ -175,7 +287,7 @@ async function webhookEditOrCreate(key, payload) {
   if (!wh) return;
   const stored = load(WEBHOOK_MSG_FILE);
   const msgId = stored[key];
-  const json = JSON.stringify({ username: 'GRUDGE EXILES', ...payload });
+  const json = JSON.stringify({ username: 'GRUDGE EXILES', avatar_url: AVATAR_URL, ...payload });
 
   // Try to edit existing message
   if (msgId) {
@@ -263,11 +375,8 @@ const commands = [
 
   // Teleport & Home system
   new SlashCommandBuilder().setName('sethome')
-    .setDescription('Save your current location as a home (provide coords from in-game)')
-    .addStringOption(o => o.setName('name').setDescription('Home name').setRequired(true))
-    .addNumberOption(o => o.setName('x').setDescription('X coordinate (from in-game TeleportPlayer)').setRequired(true))
-    .addNumberOption(o => o.setName('y').setDescription('Y coordinate').setRequired(true))
-    .addNumberOption(o => o.setName('z').setDescription('Z coordinate').setRequired(true)),
+    .setDescription('Save your current in-game position as a home (must be online)')
+    .addStringOption(o => o.setName('name').setDescription('Home name').setRequired(true)),
   new SlashCommandBuilder().setName('home')
     .setDescription('Teleport to a saved home')
     .addStringOption(o => o.setName('name').setDescription('Home name').setRequired(true)),
@@ -335,6 +444,10 @@ const commands = [
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   new SlashCommandBuilder().setName('wipeinfo').setDescription('Show wipe state info'),
 
+  // Map & Connect
+  new SlashCommandBuilder().setName('map').setDescription('Interactive Exiled Lands map with one-click warp buttons'),
+  new SlashCommandBuilder().setName('connect').setDescription('Get a one-click link to join the server'),
+
   // Utility
   new SlashCommandBuilder().setName('settings').setDescription('Show current server balance settings'),
   new SlashCommandBuilder().setName('shop').setDescription('View available kits and packages'),
@@ -399,7 +512,7 @@ client.once('ready', async () => {
         { name: 'Memory', value: proc ? `${proc.MemMB} MB` : 'N/A', inline: true },
         { name: 'Uptime', value: uptime, inline: true },
         { name: '\u200b', value: '\u200b', inline: true },
-        { name: '⚔ Balance', value: '`1.4x` DMG • `0.4x` Taken • `2x` HP\n`3x` Harvest • `3x` XP • 💀 Full Loot', inline: false },
+        { name: '⚔ Balance', value: '`1000 HP` • `40% DR` • `2x` NPC DMG • `3x` Thralls vs Players\n`2.5x` Harvest • `3x` XP • 💀 Full Loot', inline: false },
       )
       .setFooter({ text: `conan.grudge-studio.com • Updated ${new Date().toLocaleTimeString()}` });
 
@@ -465,6 +578,43 @@ client.once('ready', async () => {
   } catch (e) { console.error('Failed to register commands:', e.message); }
 });
 
+// ── Warp button emojis ──
+const WARP_EMOJIS = {
+  'dregs': '🐉', 'sinkhole': '🕳️', 'unnamed-city': '🏚️', 'shattered': '💨',
+  'dagons-eye': '🐚', 'staging-area': '🌴', 'black-keep': '🏰', 'temple-frost': '❄️',
+  'mounds': '💀', 'volcano': '🌋', 'sorcery-cave': '🔮',
+};
+
+// ── Button interaction handler (warp map clicks) ──
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isButton()) return;
+  const id = interaction.customId;
+  if (!id.startsWith('warp:')) return;
+
+  const warpName = id.slice(5); // strip 'warp:'
+  const warps = load(WARPS_FILE);
+  const w = warps[warpName];
+  if (!w) return interaction.reply({ content: `❌ Warp **${warpName}** no longer exists.`, ephemeral: true });
+
+  // Find the player's userId
+  const linked = load(PLAYERS_FILE)[interaction.user.id];
+  const userId = linked?.userId || resolveUserId(linked?.charName || '');
+  if (!userId) {
+    return interaction.reply({ content: '❌ Link your character first with `/link <character name>` while in-game.', ephemeral: true });
+  }
+
+  await interaction.deferReply({ ephemeral: true });
+  try {
+    const result = await rcon(`con ${userId} TeleportPlayer ${w.x} ${w.y} ${w.z}`);
+    if (result.includes('Couldn')) {
+      return interaction.editReply(`❌ You must be online in-game to warp.`);
+    }
+    return interaction.editReply(`🌀 Warped to **${warpName}**! ${w.desc || ''}`);
+  } catch (e) {
+    return interaction.editReply(`❌ RCON error: ${e.message}`);
+  }
+});
+
 // ── Command handler ──
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
@@ -526,10 +676,10 @@ client.on('interactionCreate', async interaction => {
           .addFields(
             { name: '🔗 Direct Connect', value: '`76.31.186.50:7777`' },
             { name: '🌐 Admin Panel', value: '[conan.grudge-studio.com](https://conan.grudge-studio.com)' },
-            { name: '⚔ Balance', value: '• Weapon damage: **1.4x**\n• Damage taken: **0.4x** (60% reduction)\n• All health: **2x** (pets 3x)\n• Harvest: **3x** \u2022 XP: **3x**\n• Pets: **2x damage**' },
+            { name: '⚔ Balance', value: '• Player HP: **1000** (5x)\n• Damage taken: **0.6x** (40% DR)\n• NPC damage: **2x**\n• Harvest: **2.5x** \u2022 XP: **3x**' },
+            { name: '🐾 Thralls', value: '• vs Players: **3x** \u2022 vs NPCs: **0.8x**\n• Follower DR: **40%** \u2022 Taming: **2x** faster' },
             { name: '💀 Loot', value: 'Full loot on death — everyone can loot corpses' },
-            { name: '🐾 Followers', value: 'Max 2 thralls/pets following' },
-            { name: '🔧 Crafting', value: '0.5x craft time, 3x craft XP' },
+            { name: '🔧 Crafting', value: '0.5x cost, 2x speed, 3x craft XP' },
           )
           .setFooter({ text: 'Created by Racalvin The Pirate King — Grudge Studio' });
         return interaction.reply({ embeds: [embed] });
@@ -638,16 +788,17 @@ client.on('interactionCreate', async interaction => {
       // ═══ Home System ═══
       case 'sethome': {
         const name = interaction.options.getString('name').toLowerCase();
-        const x = interaction.options.getNumber('x');
-        const y = interaction.options.getNumber('y');
-        const z = interaction.options.getNumber('z');
+        const linked = load(PLAYERS_FILE)[interaction.user.id];
+        if (!linked) return interaction.reply({ content: '❌ Link your character first with `/link <character name>`.', ephemeral: true });
+        const pos = getPlayerPosition(linked.charName);
+        if (!pos) return interaction.reply({ content: '❌ Could not read your position. Make sure you\'re in-game.', ephemeral: true });
         const homes = load(HOMES_FILE);
         const uid = interaction.user.id;
         if (!homes[uid]) homes[uid] = {};
         if (Object.keys(homes[uid]).length >= 5) return interaction.reply({ content: '❌ Max 5 homes. Delete one first with `/delhome`.', ephemeral: true });
-        homes[uid][name] = { x, y, z, set: Date.now() };
+        homes[uid][name] = { x: pos.x, y: pos.y, z: pos.z, set: Date.now() };
         save(HOMES_FILE, homes);
-        return interaction.reply({ content: `🏠 Home **${name}** saved at \`${x}, ${y}, ${z}\``, ephemeral: true });
+        return interaction.reply({ content: `🏠 Home **${name}** saved at \`${pos.x}, ${pos.y}, ${pos.z}\``, ephemeral: true });
       }
 
       case 'home': {
@@ -657,14 +808,10 @@ client.on('interactionCreate', async interaction => {
         if (!homes[uid]?.[name]) return interaction.reply({ content: `❌ No home named **${name}**. Check \`/homes\`.`, ephemeral: true });
         const h = homes[uid][name];
         const players = load(PLAYERS_FILE);
-        if (!players[uid]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>` (must be online).', ephemeral: true });
-        const playerName = players[uid].steamId;
+        if (!players[uid]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>`.', ephemeral: true });
         await interaction.deferReply({ ephemeral: true });
         try {
-          // Two-step via bot puppet: teleport ale to coords, then pull player
-          await rcon(`con TeleportPlayer ${h.x} ${h.y} ${h.z}`);
-          await new Promise(r => setTimeout(r, 500));
-          await rcon(`con TeleportToMe ${playerName}`);
+          await rcon(`con ${players[uid].userId} TeleportPlayer ${h.x} ${h.y} ${h.z}`);
           return interaction.editReply(`🏠 Teleporting you to **${name}** (\`${h.x}, ${h.y}, ${h.z}\`)`);
         } catch (e) {
           return interaction.editReply(`RCON error: ${e.message}`);
@@ -703,14 +850,10 @@ client.on('interactionCreate', async interaction => {
         const w = warps[name];
         const players2 = load(PLAYERS_FILE);
         const uid2 = interaction.user.id;
-        if (!players2[uid2]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>` (must be online).', ephemeral: true });
-        const playerName2 = players2[uid2].steamId;
+        if (!players2[uid2]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>`.', ephemeral: true });
         await interaction.deferReply({ ephemeral: true });
         try {
-          // Two-step via bot puppet: teleport ale to warp, then pull player
-          await rcon(`con TeleportPlayer ${w.x} ${w.y} ${w.z}`);
-          await new Promise(r => setTimeout(r, 500));
-          await rcon(`con TeleportToMe ${playerName2}`);
+          await rcon(`con ${players2[uid2].userId} TeleportPlayer ${w.x} ${w.y} ${w.z}`);
           return interaction.editReply(`🌀 Warping to **${name}** (\`${w.x}, ${w.y}, ${w.z}\`)\n📍 ${w.desc || ''}`);
         } catch (e) {
           return interaction.editReply(`RCON error: ${e.message}`);
@@ -763,12 +906,10 @@ client.on('interactionCreate', async interaction => {
         if (!spawnData.x) return interaction.reply({ content: '❌ No custom spawn set. Ask an admin to use `/setspawn`.', ephemeral: true });
         const players3 = load(PLAYERS_FILE);
         const uid3 = interaction.user.id;
-        if (!players3[uid3]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>` (must be online).', ephemeral: true });
+        if (!players3[uid3]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>`.', ephemeral: true });
         await interaction.deferReply({ ephemeral: true });
         try {
-          await rcon(`con TeleportPlayer ${spawnData.x} ${spawnData.y} ${spawnData.z}`);
-          await new Promise(r => setTimeout(r, 500));
-          await rcon(`con TeleportToMe ${players3[uid3].steamId}`);
+          await rcon(`con ${players3[uid3].userId} TeleportPlayer ${spawnData.x} ${spawnData.y} ${spawnData.z}`);
           return interaction.editReply(`📍 Teleporting to spawn (\`${spawnData.x}, ${spawnData.y}, ${spawnData.z}\`)`);
         } catch (e) {
           return interaction.editReply(`RCON error: ${e.message}`);
@@ -800,6 +941,72 @@ client.on('interactionCreate', async interaction => {
         } catch (e) {
           return interaction.editReply(`RCON error: ${e.message}`);
         }
+      }
+
+      // ═══ Interactive Map ═══
+      case 'map': {
+        const warps = load(WARPS_FILE);
+        const warpEntries = Object.entries(warps);
+        const a2s = await a2sQuery();
+        const playerCount = a2s ? `${a2s.players}/${a2s.maxPlayers}` : `${onlinePlayers.length}/40`;
+
+        const warpList = warpEntries.map(([n, w]) =>
+          `${WARP_EMOJIS[n] || '🌀'} **${n}** — ${w.desc || 'No description'}`
+        ).join('\n');
+
+        const embed = new EmbedBuilder()
+          .setTitle('🗺️ GRUDGE EXILES — Exiled Lands Warp Map')
+          .setColor(COLORS.gold)
+          .setDescription(`${isServerRunning() ? '🟢' : '🔴'} **${playerCount}** online\n\n**Click a button below to teleport instantly!**\nYou must be in-game and linked (\`/link\`).\n\n${warpList}`)
+          .setImage('https://static.wikia.nocookie.net/conanexiles_gamepedia/images/2/2e/Conan_Exiles_Map.jpg')
+          .setFooter({ text: 'conan.grudge-studio.com • Warps teleport you directly in-game' });
+
+        // Build button rows (max 5 per row)
+        const { ButtonBuilder, ButtonStyle, ActionRowBuilder: AR } = require('discord.js');
+        const rows = [];
+        let currentRow = new AR();
+        warpEntries.forEach(([n], i) => {
+          if (i > 0 && i % 5 === 0) { rows.push(currentRow); currentRow = new AR(); }
+          currentRow.addComponents(
+            new ButtonBuilder()
+              .setCustomId(`warp:${n}`)
+              .setLabel(n)
+              .setStyle(ButtonStyle.Primary)
+              .setEmoji(WARP_EMOJIS[n] || '🌀')
+          );
+        });
+        rows.push(currentRow);
+
+        // Add a Join Server link button at the end
+        const linkRow = new AR().addComponents(
+          new ButtonBuilder().setLabel('Join Server').setStyle(ButtonStyle.Link).setURL(STEAM_CONNECT).setEmoji('⚔'),
+          new ButtonBuilder().setLabel('Web Panel').setStyle(ButtonStyle.Link).setURL('https://conan.grudge-studio.com'),
+        );
+        rows.push(linkRow);
+
+        return interaction.reply({ embeds: [embed], components: rows });
+      }
+
+      // ═══ Connect ═══
+      case 'connect': {
+        const a2s = await a2sQuery();
+        const playerCount = a2s ? `${a2s.players}/${a2s.maxPlayers}` : `${onlinePlayers.length}/40`;
+        const statusText = isServerRunning() ? '🟢 **ONLINE**' : '🔴 **OFFLINE**';
+        const embed = new EmbedBuilder()
+          .setTitle('⚔ Join GRUDGE EXILES')
+          .setColor(COLORS.red)
+          .setDescription(`${statusText} — **${playerCount}** players\n\n**Direct Connect:** \`76.31.186.50:7777\`\n\n[🎮 **Click to Join via Steam**](${STEAM_CONNECT})`)
+          .addFields(
+            { name: '⚔ Balance', value: '1000 HP • 40% DR • 2x NPC DMG • Full Loot', inline: false },
+            { name: '🌐 Web Panel', value: '[conan.grudge-studio.com](https://conan.grudge-studio.com)', inline: true },
+          )
+          .setFooter({ text: 'Created by Racalvin The Pirate King — Grudge Studio' });
+        const { ButtonBuilder, ButtonStyle, ActionRowBuilder: AR } = require('discord.js');
+        const row = new AR().addComponents(
+          new ButtonBuilder().setLabel('Join Server').setStyle(ButtonStyle.Link).setURL(STEAM_CONNECT).setEmoji('⚔'),
+          new ButtonBuilder().setLabel('Web Panel').setStyle(ButtonStyle.Link).setURL('https://conan.grudge-studio.com'),
+        );
+        return interaction.reply({ embeds: [embed], components: [row] });
       }
 
       // ═══ Character Link ═══
