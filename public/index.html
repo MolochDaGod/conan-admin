@@ -282,11 +282,12 @@
       <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--gold))"></div>
         <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">🌀 Warp Points</h3>
-        <ul style="list-style:none;line-height:2">
+        <ul style="list-style:none;line-height:1.9;font-size:.9rem">
           <li>🐉 <strong>dregs</strong> — Southern river</li>
           <li>🕳️ <strong>sinkhole</strong> — Central desert</li>
           <li>🏚️ <strong>unnamed-city</strong> — The Archives</li>
-          <li>💨 <strong>shattered</strong> — Brimstone & Sepermeru</li>
+          <li>💨 <strong>shattered</strong> — Shattered Springs</li>
+          <li>🏛️ <strong>sept</strong> — Sepermeru city</li>
           <li>🐚 <strong>dagons-eye</strong> — Eastern jungle</li>
           <li>🌴 <strong>staging-area</strong> — Deep jungle</li>
           <li>🏰 <strong>black-keep</strong> — Frozen north</li>
@@ -311,6 +312,38 @@
         <li><strong>Link Your Character:</strong> Type <code style="color:var(--yellow)">/link YourName</code> in Discord while online to enable warps</li>
         <li><strong>Fight Smart:</strong> 1000 HP + 40% DR. Bring food, stack DoTs, outlast your enemy</li>
       </ol>
+    </div>
+
+    <!-- Commands Reference -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:3rem">
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--gold))"></div>
+        <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">💬 In-Game Chat Commands</h3>
+        <ul style="list-style:none;line-height:2.2;font-size:.9rem">
+          <li><code style="color:var(--yellow)">!sethome base</code> — Save your current position</li>
+          <li><code style="color:var(--yellow)">!home base</code> — Teleport to saved home</li>
+          <li><code style="color:var(--yellow)">!homes</code> — List your saved homes</li>
+          <li><code style="color:var(--yellow)">!delhome base</code> — Delete a home</li>
+          <li><code style="color:var(--yellow)">!warp sept</code> — Warp to a location</li>
+          <li><code style="color:var(--yellow)">!warps</code> — List all warp points</li>
+        </ul>
+        <p style="margin-top:.5rem;color:var(--text-dim);font-size:.8rem">Up to 5 homes per player • Position auto-detected</p>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:1.5rem;border:1px solid var(--border-gold);position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--gold))"></div>
+        <h3 style="color:var(--gold);font-family:var(--font-heading);margin-bottom:1rem;letter-spacing:.1em">🤖 Discord Slash Commands</h3>
+        <ul style="list-style:none;line-height:2.2;font-size:.9rem">
+          <li><code style="color:var(--yellow)">/link YourCharName</code> — Link your character (in-game name)</li>
+          <li><code style="color:var(--yellow)">/map</code> — Interactive warp map with buttons</li>
+          <li><code style="color:var(--yellow)">/connect</code> — Server info + join link</li>
+          <li><code style="color:var(--yellow)">/sethome base</code> — Save position from Discord</li>
+          <li><code style="color:var(--yellow)">/home base</code> — Teleport from Discord</li>
+          <li><code style="color:var(--yellow)">/warp sept</code> — Teleport to any warp</li>
+          <li><code style="color:var(--yellow)">/status</code> — Server status + players</li>
+          <li><code style="color:var(--yellow)">/whoami</code> — Your linked character info</li>
+        </ul>
+        <p style="margin-top:.5rem;color:var(--text-dim);font-size:.8rem">Must be in-game for teleport commands to work</p>
+      </div>
     </div>
 
     <!-- MOTD -->

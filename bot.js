@@ -624,6 +624,7 @@ client.on('interactionCreate', async interaction => {
     switch (commandName) {
       // ═══ Server Status ═══
       case 'status': {
+        await interaction.deferReply();
         const running = isServerRunning();
         const proc = running ? getProcessInfo() : null;
         const embed = new EmbedBuilder()
@@ -643,7 +644,6 @@ client.on('interactionCreate', async interaction => {
             embed.addFields({ name: 'Uptime', value: mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h ${mins%60}m`, inline: true });
           }
         }
-        // Try to get player count
         if (running) {
           try {
             const plist = await rcon('listplayers');
@@ -651,20 +651,21 @@ client.on('interactionCreate', async interaction => {
             embed.addFields({ name: 'Players', value: `${count}/40`, inline: true });
           } catch {}
         }
-        return interaction.reply({ embeds: [embed] });
+        return interaction.editReply({ embeds: [embed] });
       }
 
       case 'players': {
         if (!isServerRunning()) return interaction.reply({ content: '🔴 Server is offline.', ephemeral: true });
+        await interaction.deferReply();
         try {
           const list = await rcon('listplayers');
           const embed = new EmbedBuilder()
             .setTitle('👥 Online Players')
             .setColor(COLORS.blue)
             .setDescription(list.trim() || '*No players online*');
-          return interaction.reply({ embeds: [embed] });
+          return interaction.editReply({ embeds: [embed] });
         } catch (e) {
-          return interaction.reply({ content: `RCON error: ${e.message}`, ephemeral: true });
+          return interaction.editReply(`RCON error: ${e.message}`);
         }
       }
 
@@ -945,6 +946,7 @@ client.on('interactionCreate', async interaction => {
 
       // ═══ Interactive Map ═══
       case 'map': {
+        await interaction.deferReply();
         const warps = load(WARPS_FILE);
         const warpEntries = Object.entries(warps);
         const a2s = await a2sQuery();
@@ -977,18 +979,18 @@ client.on('interactionCreate', async interaction => {
         });
         rows.push(currentRow);
 
-        // Add a Join Server link button at the end
+        // Add web links at the end (steam:// not allowed in Discord buttons)
         const linkRow = new AR().addComponents(
-          new ButtonBuilder().setLabel('Join Server').setStyle(ButtonStyle.Link).setURL(STEAM_CONNECT).setEmoji('⚔'),
           new ButtonBuilder().setLabel('Web Panel').setStyle(ButtonStyle.Link).setURL('https://conan.grudge-studio.com'),
         );
         rows.push(linkRow);
 
-        return interaction.reply({ embeds: [embed], components: rows });
+        return interaction.editReply({ embeds: [embed], components: rows });
       }
 
       // ═══ Connect ═══
       case 'connect': {
+        await interaction.deferReply();
         const a2s = await a2sQuery();
         const playerCount = a2s ? `${a2s.players}/${a2s.maxPlayers}` : `${onlinePlayers.length}/40`;
         const statusText = isServerRunning() ? '🟢 **ONLINE**' : '🔴 **OFFLINE**';
@@ -1003,10 +1005,9 @@ client.on('interactionCreate', async interaction => {
           .setFooter({ text: 'Created by Racalvin The Pirate King — Grudge Studio' });
         const { ButtonBuilder, ButtonStyle, ActionRowBuilder: AR } = require('discord.js');
         const row = new AR().addComponents(
-          new ButtonBuilder().setLabel('Join Server').setStyle(ButtonStyle.Link).setURL(STEAM_CONNECT).setEmoji('⚔'),
           new ButtonBuilder().setLabel('Web Panel').setStyle(ButtonStyle.Link).setURL('https://conan.grudge-studio.com'),
         );
-        return interaction.reply({ embeds: [embed], components: [row] });
+        return interaction.editReply({ embeds: [embed], components: [row] });
       }
 
       // ═══ Character Link ═══
@@ -1312,6 +1313,10 @@ client.on('interactionCreate', async interaction => {
     return interaction.reply(reply);
   }
 });
+
+// ── Error handler (prevent unhandled rejections from crashing the bot) ──
+client.on('error', e => console.error('[Bot] Client error:', e.message));
+process.on('unhandledRejection', e => console.error('[Bot] Unhandled rejection:', e));
 
 // ── Login ──
 client.login(process.env.DISCORD_TOKEN);
