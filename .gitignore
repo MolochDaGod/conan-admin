@@ -1,5 +1,7 @@
 node_modules/
 .env
-bot-stdout.log
-bot-stderr.log
+*.log
 data/
+playit*.exe
+playit*.txt
+*.bak

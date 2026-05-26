@@ -154,6 +154,19 @@ function parsePlayerList(raw) {
 
 // Known players registry — maps charName → full player info (persists across restarts)
 const KNOWN_PLAYERS_FILE = path.join(DATA_DIR, 'known-players.json');
+const GRANTED_KITS_FILE = path.join(DATA_DIR, 'granted-kits.json');
+const warpCooldowns = new Map(); // userId -> timestamp
+const WARP_COOLDOWN_MS = 30000; // 30 seconds
+
+function checkWarpCooldown(userId) {
+  const last = warpCooldowns.get(userId);
+  if (last && Date.now() - last < WARP_COOLDOWN_MS) {
+    const remaining = Math.ceil((WARP_COOLDOWN_MS - (Date.now() - last)) / 1000);
+    return remaining; // seconds left
+  }
+  return 0; // no cooldown
+}
+function setWarpCooldown(userId) { warpCooldowns.set(userId, Date.now()); }
 
 async function refreshOnlineCache() {
   if (!isServerRunning()) { onlinePlayers = []; return; }
@@ -173,6 +186,28 @@ async function refreshOnlineCache() {
         }
       }
       if (changed) save(KNOWN_PLAYERS_FILE, known);
+    }
+    // Auto-grant starter kit to first-time players
+    if (onlinePlayers.length > 0) {
+      const granted = load(GRANTED_KITS_FILE);
+      for (const p of onlinePlayers) {
+        if (!p.userId || granted[p.userId]) continue;
+        granted[p.userId] = { charName: p.charName, grantedAt: Date.now() };
+        save(GRANTED_KITS_FILE, granted);
+        console.log(`[AutoKit] Granting starter kit to new player: ${p.charName} (${p.userId})`);
+        try {
+          await rcon(`con ${p.userId} SpawnItem 51001 1`); // Stone Hatchet
+          await rcon(`con ${p.userId} SpawnItem 51002 1`); // Stone Pick
+          await rcon(`con ${p.userId} SpawnItem 11502 100`); // Plant Fiber
+          await rcon(`con ${p.userId} SpawnItem 11001 100`); // Stone
+          await rcon(`con ${p.userId} SpawnItem 11101 100`); // Wood
+          await rcon(`con ${p.userId} SpawnItem 13005 5`); // Waterskin
+          await rcon(`con ${p.userId} SpawnItem 18100 10`); // Aloe Soup
+          await rcon(`broadcast [GRUDGE] Welcome ${p.charName}! Starter kit granted. Type !warps for fast travel.`);
+        } catch (e) {
+          console.log(`[AutoKit] Failed for ${p.charName}:`, e.message);
+        }
+      }
     }
   } catch {
     // Keep stale cache on RCON failure
@@ -852,9 +887,12 @@ client.on('interactionCreate', async interaction => {
         const players2 = load(PLAYERS_FILE);
         const uid2 = interaction.user.id;
         if (!players2[uid2]) return interaction.reply({ content: '❌ Link your character first with `/link <character name>`.', ephemeral: true });
+        const cd = checkWarpCooldown(players2[uid2].userId);
+        if (cd > 0) return interaction.reply({ content: `⏳ Warp cooldown: **${cd}s** remaining.`, ephemeral: true });
         await interaction.deferReply({ ephemeral: true });
         try {
           await rcon(`con ${players2[uid2].userId} TeleportPlayer ${w.x} ${w.y} ${w.z}`);
+          setWarpCooldown(players2[uid2].userId);
           return interaction.editReply(`🌀 Warping to **${name}** (\`${w.x}, ${w.y}, ${w.z}\`)\n📍 ${w.desc || ''}`);
         } catch (e) {
           return interaction.editReply(`RCON error: ${e.message}`);
